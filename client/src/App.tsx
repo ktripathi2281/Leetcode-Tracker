@@ -1,28 +1,27 @@
-import { useEffect, useState } from 'react';
-import type { HealthResponse } from '@lct/shared';
-import { api } from './api/client';
+import { Navigate, Route, Routes } from 'react-router';
+import { AuthProvider } from './auth/AuthContext';
+import { GuestOnly, RequireAuth } from './auth/routeGuards';
+import AppLayout from './components/AppLayout';
+import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 
-type ServerState = { kind: 'checking' } | { kind: 'ok'; at: string } | { kind: 'down' };
-
+// The router itself is provided by main.tsx (BrowserRouter) or by tests (MemoryRouter).
 export default function App() {
-  const [server, setServer] = useState<ServerState>({ kind: 'checking' });
-
-  useEffect(() => {
-    api
-      .get<HealthResponse>('/health')
-      .then((res) => setServer({ kind: 'ok', at: res.data.timestamp }))
-      .catch(() => setServer({ kind: 'down' }));
-  }, []);
-
   return (
-    <main className="shell">
-      <h1>LeetCode Tracker</h1>
-      <p className="muted">Stage 1 — project setup</p>
-      <p className={`status status-${server.kind}`} role="status">
-        {server.kind === 'checking' && 'Checking server…'}
-        {server.kind === 'ok' && 'Server is running'}
-        {server.kind === 'down' && 'Server is not reachable'}
-      </p>
-    </main>
+    <AuthProvider>
+      <Routes>
+        <Route element={<GuestOnly />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+        </Route>
+        <Route element={<RequireAuth />}>
+          <Route element={<AppLayout />}>
+            <Route index element={<HomePage />} />
+          </Route>
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </AuthProvider>
   );
 }

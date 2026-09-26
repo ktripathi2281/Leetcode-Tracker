@@ -13,8 +13,8 @@ public, multi-user app.
 - **Monorepo:** npm workspaces — `client/`, `server/`, `extension/`, `shared/` (types shared by all)
 
 ## Stages (each one works end-to-end before moving on)
-1. **Scaffold** — workspaces, TS config, lint, `.env.example`, `npm run dev` runs both apps, health check.
-2. **Auth** — register / login / me, protected routes, token handling on the client.
+1. ✅ **Scaffold** — workspaces, TS config, lint, `.env.example`, `npm run dev` runs both apps, health check.
+2. ✅ **Auth** — register / login / me, protected routes, token handling on the client.
    Public-ready from the start: login rate limiting, stronger password rules (min 8 chars).
 3. **Problem log** — CRUD, filters, search, pagination, Add/Edit/Detail pages.
    Includes **LeetCode URL auto-fill**: paste a problem link, server fetches title, number,
@@ -37,6 +37,9 @@ public, multi-user app.
    The extension authenticates to the tracker with a per-user, revocable API token.
 10. **Go live**
     - Hosting: MongoDB Atlas (DB), Render or Railway (server), Vercel or Netlify (client)
+    - Rotate dev credentials before launch: a dedicated MongoDB user for this app (not shared
+      with other projects) and a new Gemini API key; set a new JWT_SECRET in production
+    - `app.set("trust proxy", 1)` behind the host's proxy so rate limiting sees real client IPs
     - Password reset by email; optional email verification
     - Security headers (helmet), CORS locked to the real domain, general API rate limiting
     - Privacy policy; "delete my account and data" in settings
