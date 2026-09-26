@@ -5,6 +5,8 @@ import { useCurrentUser } from '../auth/AuthContext';
 import { DifficultyBadge } from '../components/Badges';
 import { ErrorState, Loading } from '../components/PageStates';
 import { describeNextReview } from '../lib/format';
+import { useLatestPlan } from '../api/ai';
+import { TaskTitle } from './PlanPage';
 
 const DUE_PREVIEW = { due: true, sort: 'recent', page: 1, limit: 5 } as const;
 
@@ -52,10 +54,44 @@ function Dashboard({ stats }: { stats: StatsSummary }) {
 
       <div className="dashboard-grid">
         <DueNow count={stats.dueNow} upcoming={stats.dueThisWeek - stats.dueNow} />
+        <TodaysPlan />
         <StatusChart stats={stats} />
         <DifficultyMeters stats={stats} />
       </div>
     </>
+  );
+}
+
+/** Today's tasks from the weekly plan, or an invitation to make one. */
+function TodaysPlan() {
+  const plan = useLatestPlan().data;
+  const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+  const fresh = plan && Date.now() - Date.parse(plan.createdAt) < 7 * 86_400_000;
+  const tasks = fresh ? (plan.days.find((d) => d.day === today)?.tasks ?? []) : [];
+
+  return (
+    <section className="card" aria-labelledby="plan-heading">
+      <div className="card-head">
+        <h2 id="plan-heading">Today's plan</h2>
+        <Link to="/plan" className="btn btn-secondary">
+          {fresh ? 'Full week' : 'Plan my week'}
+        </Link>
+      </div>
+      {!fresh ? (
+        <p className="muted">Let the AI coach plan your week around your reviews and weak topics.</p>
+      ) : tasks.length === 0 ? (
+        <p className="muted">Nothing planned today. Enjoy the rest.</p>
+      ) : (
+        <ul className="due-list">
+          {tasks.map((t, i) => (
+            <li key={i}>
+              <TaskTitle task={t} />
+              <span className={`badge task-${t.kind}`}>{t.kind === 'new' ? 'New' : t.kind === 'review' ? 'Review' : 'Practice'}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
 

@@ -1,5 +1,6 @@
 // Types, constants and validation shared by the server, client and (later) the extension.
 
+export * from './ai';
 export * from './auth';
 export * from './constants';
 export * from './leetcode';

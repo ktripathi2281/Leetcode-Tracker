@@ -38,11 +38,17 @@ public, multi-user app.
      older data), so activity charts and streaks survive re-solves.
    - Weekly solves/reviews and streaks follow the user's time zone; topics show mastered /
      practising / unsolved and "needed help" reviews; chart colors validated for both themes.
-7. **Agents** — one at a time, each logged to AgentLog, each with **per-user daily limits**
+7. ✅ **Agents** — one at a time, each logged to AgentLog, each with **per-user daily limits**
    (protects the Gemini bill):
    a. Post-Mortem Analyzer (structured JSON output)
    b. Socratic Tutor (hint-only chat)
    c. Weekly Planner (tool-calling loop)
+   - Pinned model `gemini-3.8-flash` with `gemini-3.5-flash` fallback; retries on overload,
+     2-minute budget per call. (`gemini-2.5-flash`, used by v1, is closed to new API keys.)
+   - Daily limits per user (UTC): 20 post-mortems, 60 tutor messages, 5 plans; atomic counters;
+     failed calls don't count. Plus a 10-per-minute burst limit.
+   - The planner's tools are read-only and scoped to the signed-in user; its plan is checked:
+     tracked problems must be the user's, new LeetCode problems must exist (invented ones dropped).
 8. **Agent Logs page** — list + full trace view.
 9. **Browser extension** — on an "Accepted" LeetCode submission, sends the code, language,
    runtime and problem to the tracker (creates or updates the problem). Uses the user's own

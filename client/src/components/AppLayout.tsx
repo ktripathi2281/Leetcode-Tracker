@@ -5,9 +5,11 @@ import { useAutoSync } from '../api/leetcode';
 import { useStatsSummary } from '../api/problems';
 
 const NAV = [
-  { to: '/', label: 'Home', end: true },
+  // On phones the logo stands in for Home, so the rest fit on one row.
+  { to: '/', label: 'Home', end: true, className: 'nav-home' },
   { to: '/problems', label: 'Problems', end: false },
   { to: '/reviews', label: 'Reviews', end: false },
+  { to: '/plan', label: 'Plan', end: false },
   { to: '/analytics', label: 'Analytics', end: false },
 ];
 
@@ -36,7 +38,7 @@ export default function AppLayout() {
           </Link>
           <nav className="nav" aria-label="Main">
             {NAV.map((item) => (
-              <NavLink key={item.to} to={item.to} end={item.end} className="nav-link">
+              <NavLink key={item.to} to={item.to} end={item.end} className={`nav-link ${item.className ?? ''}`}>
                 {item.label}
                 {item.to === '/reviews' && dueNow > 0 && (
                   <span className="nav-count" aria-label={`${dueNow} due`}>

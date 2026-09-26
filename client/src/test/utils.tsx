@@ -78,6 +78,12 @@ export function signedIn(routes: Record<string, Handler | object> = {}) {
     '/health': health,
     '/leetcode/account': disconnected,
     '/stats/summary': makeStats(),
+    '/ai/usage': [
+      { agent: 'post-mortem', used: 0, limit: 20, resetsAt: '2030-01-01T00:00:00.000Z' },
+      { agent: 'tutor', used: 0, limit: 60, resetsAt: '2030-01-01T00:00:00.000Z' },
+      { agent: 'planner', used: 0, limit: 5, resetsAt: '2030-01-01T00:00:00.000Z' },
+    ],
+    '/ai/weekly-plan/latest': { plan: null },
     ...routes,
   });
 }
@@ -103,6 +109,7 @@ export function makeProblem(overrides: Partial<Problem> = {}): Problem {
     nextReviewAt: null,
     reviewStep: 0,
     lastReviewedAt: null,
+    postMortem: null,
     createdAt: '2026-09-01T00:00:00.000Z',
     updatedAt: '2026-09-02T00:00:00.000Z',
     ...overrides,

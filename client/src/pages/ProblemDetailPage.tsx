@@ -8,6 +8,8 @@ import { DifficultyBadge, StatusBadge } from '../components/Badges';
 import { EmptyState, ErrorState, Loading } from '../components/PageStates';
 import { describeNextReview, formatDate, isDueToday } from '../lib/format';
 import ReviewButtons, { reviewFeedback, reviewProgress } from '../components/ReviewButtons';
+import PostMortemCard from '../components/PostMortemCard';
+import TutorChat from '../components/TutorChat';
 
 
 export default function ProblemDetailPage() {
@@ -17,6 +19,7 @@ export default function ProblemDetailPage() {
   const update = useUpdateProblem(id);
   const remove = useDeleteProblem(id);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [showHints, setShowHints] = useState(false);
 
   if (problem.isPending) return <Loading />;
   if (problem.isError) {
@@ -59,6 +62,9 @@ export default function ProblemDetailPage() {
           </div>
         </div>
         <div className="header-actions">
+          <button className="btn btn-secondary" aria-expanded={showHints} onClick={() => setShowHints((v) => !v)}>
+            {showHints ? 'Hide hints' : 'Get hints'}
+          </button>
           <Link to={`/problems/${p.id}/edit`} className="btn btn-secondary">
             Edit
           </Link>
@@ -101,6 +107,8 @@ export default function ProblemDetailPage() {
           ))}
         </div>
       </section>
+
+      {showHints && <TutorChat problem={p} />}
 
       <ReviewSection problem={p} />
 
@@ -146,6 +154,8 @@ export default function ProblemDetailPage() {
           </p>
         )}
       </section>
+
+      <PostMortemCard problem={p} />
 
       {p.notes && (
         <section className="card">

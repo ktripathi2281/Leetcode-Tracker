@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { PostMortem } from './ai';
 import { DIFFICULTIES, LANGUAGE_IDS, STATUSES, type Difficulty, type Language, type Status } from './constants';
 
 const tagList = (max: number) =>
@@ -90,6 +91,8 @@ export interface Problem {
   /** Successful reviews in a row; indexes REVIEW_INTERVALS_DAYS. */
   reviewStep: number;
   lastReviewedAt: string | null;
+  /** The latest AI analysis of the solution, if any. */
+  postMortem: PostMortem | null;
   createdAt: string;
   updatedAt: string;
 }

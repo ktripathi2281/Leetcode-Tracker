@@ -18,6 +18,10 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
   BCRYPT_ROUNDS: z.coerce.number().int().min(4).max(15).default(12),
   GEMINI_API_KEY: z.string().optional(),
+  // A pinned model, not a "-latest" alias, so behaviour only changes when this does.
+  GEMINI_MODEL: z.string().default('gemini-3.8-flash'),
+  // Tried when the main model stays overloaded after retries. Empty to disable.
+  GEMINI_FALLBACK_MODEL: z.string().default('gemini-3.5-flash'),
   // Minimum gap between requests to LeetCode, to stay well clear of its limits.
   LEETCODE_REQUEST_GAP_MS: z.coerce.number().int().min(0).default(300),
 });
