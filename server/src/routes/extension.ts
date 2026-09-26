@@ -71,6 +71,20 @@ export function extensionRoutes({ submissionLimit }: { submissionLimit: number }
     message: { message: 'Too many submissions at once. Try again in a minute.' } satisfies ApiError,
   });
 
+  // Extension problems are hard to see from the browser, so note failed requests here.
+  router.use((req, res, next) => {
+    res.on('finish', () => {
+      if (res.statusCode >= 400) {
+        const issues = res.locals.validationIssues as string[] | undefined;
+        console.warn(
+          `Extension ${req.method} ${req.path} → ${res.statusCode} for ${req.user?.username ?? 'unknown user'}` +
+            (issues ? ` (${issues.join('; ')})` : ''),
+        );
+      }
+    });
+    next();
+  });
+
   // GET /api/extension/me — lets the extension check its token
   router.get('/me', (req, res) => {
     res.json({ username: req.user!.username } satisfies ExtensionMe);

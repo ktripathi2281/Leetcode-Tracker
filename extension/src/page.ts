@@ -4,9 +4,16 @@
 import { createDetector, isInteresting } from './lib/detect';
 import { CHANNEL } from './lib/channel';
 
-const detector = createDetector((submission) => {
-  window.postMessage({ channel: CHANNEL, type: 'accepted', submission }, window.location.origin);
-});
+const log = (message: string) => console.info(`[LeetCode Tracker] ${message}`);
+
+const detector = createDetector(
+  (submission) => {
+    log(`accepted: sending ${submission.slug} to your tracker`);
+    window.postMessage({ channel: CHANNEL, type: 'accepted', submission }, window.location.origin);
+  },
+  undefined,
+  log,
+);
 
 const safely = (fn: () => void) => {
   try {
@@ -28,7 +35,7 @@ window.fetch = async function (this: unknown, input: RequestInfo | URL, init?: R
       .clone()
       .json()
       .then((json: unknown) => detector.observe(url, method, init?.body ?? null, json))
-      .catch(() => {});
+      .catch(() => log(`couldn't read the response of ${url}`));
   });
   return response;
 };
@@ -56,3 +63,5 @@ XMLHttpRequest.prototype.send = function (this: XMLHttpRequest, body?: Document 
   });
   return originalSend.call(this, body);
 };
+
+log('watching this page for accepted submissions');

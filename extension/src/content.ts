@@ -8,7 +8,12 @@ window.addEventListener('message', (event: MessageEvent) => {
   if (data?.channel !== CHANNEL || data.type !== 'accepted') return;
 
   chrome.runtime.sendMessage({ type: 'submission', submission: data.submission }, (reply: ToastReply | undefined) => {
-    if (chrome.runtime.lastError || !reply) return; // extension reloaded; nothing to show
+    if (chrome.runtime.lastError || !reply) {
+      // Usually: the extension was reloaded, so this tab needs a refresh.
+      console.info(`[LeetCode Tracker] couldn't reach the extension: ${chrome.runtime.lastError?.message ?? 'no reply'}. Reload this tab.`);
+      return;
+    }
+    console.info(`[LeetCode Tracker] tracker replied: ${toastText(reply)}`);
     showToast(toastText(reply), reply.ok);
   });
 });

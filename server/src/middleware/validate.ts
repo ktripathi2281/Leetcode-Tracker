@@ -3,6 +3,8 @@ import type { z } from 'zod';
 import type { ApiError } from '@lct/shared';
 
 export function sendValidationError(res: Response, error: z.ZodError) {
+  // Kept for the server log (e.g. the extension logger), without echoing request data.
+  res.locals.validationIssues = error.issues.map((i) => `${i.path.join('.')}: ${i.message}`);
   const body: ApiError = {
     message: error.issues[0]?.message ?? 'Invalid input',
     issues: error.issues.map((i) => ({ path: i.path.join('.'), message: i.message })),

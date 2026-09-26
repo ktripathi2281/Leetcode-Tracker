@@ -40,7 +40,14 @@ function parseJson(text: unknown): Record<string, unknown> | null {
 
 const str = (value: unknown) => (typeof value === 'string' || typeof value === 'number' ? String(value) : undefined);
 
-export function createDetector(onAccepted: (submission: AcceptedSubmission) => void, now = () => new Date()) {
+/** Progress notes for the console, so a user can see where detection stops. */
+export type Log = (message: string) => void;
+
+export function createDetector(
+  onAccepted: (submission: AcceptedSubmission) => void,
+  now = () => new Date(),
+  log: Log = () => {},
+) {
   const pending = new Map<string, Pending>();
 
   /** A finished request: its URL and method, the body sent, and the parsed JSON response. */
@@ -52,9 +59,14 @@ export function createDetector(onAccepted: (submission: AcceptedSubmission) => v
       const code = sent?.typed_code;
       const lang = sent?.lang;
       if (id && typeof code === 'string' && typeof lang === 'string') {
+        log(`saw a submission of ${submit[1]} (#${id}, ${lang})`);
         pending.set(id, { slug: submit[1]!, lang, code });
         // Keep memory bounded if checks never arrive.
         if (pending.size > MAX_PENDING) pending.delete(pending.keys().next().value!);
+      } else {
+        log(
+          `saw a submit request but couldn't read it (submission id: ${id ?? 'missing'}, code: ${typeof code}, lang: ${typeof lang})`,
+        );
       }
       return;
     }
@@ -66,6 +78,7 @@ export function createDetector(onAccepted: (submission: AcceptedSubmission) => v
     const id = check[1]!;
     const submitted = pending.get(id);
     pending.delete(id);
+    log(`result for #${id}: ${str(result.status_msg) ?? 'unknown'}${submitted ? '' : ' (no matching submission seen)'}`);
     if (!submitted || result.status_msg !== 'Accepted') return;
 
     const finished = typeof result.task_finish_time === 'number' ? new Date(result.task_finish_time) : now();

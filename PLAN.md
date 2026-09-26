@@ -60,7 +60,11 @@ public, multi-user app.
    - Tokens are stored hashed, work only on the extension endpoints, and are managed in Settings.
    - Same solve rules as sync (shared lib/solves.ts); resends are ignored by submission id.
    - Submissions that can't be sent (tracker or LeetCode down) are queued and retried.
-   - Not yet verified against live LeetCode (needs the user's LeetCode login): manual test pending.
+   - **Known issue (parked):** on live LeetCode the extension doesn't yet detect accepted
+     submissions (the page shows the expected submit/ and check/ requests, but nothing reaches
+     the tracker). Console diagnostics (`[LeetCode Tracker] …`) and server-side logging of
+     rejected requests are in place for when we pick this up. Idea for then: also fill in code
+     for synced problems via LeetCode's submission details, from the user's own browser.
 10. **Go live**
     - Hosting: MongoDB Atlas (DB), Render or Railway (server), Vercel or Netlify (client)
     - Rotate dev credentials before launch: a dedicated MongoDB user for this app (not shared
