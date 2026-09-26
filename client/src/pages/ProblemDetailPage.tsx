@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import axios from 'axios';
-import { LANGUAGES, STATUSES } from '@lct/shared';
+import { LANGUAGES, STATUSES, type Problem } from '@lct/shared';
 import { getErrorMessage } from '../api/client';
 import { useDeleteProblem, useProblem, useUpdateProblem } from '../api/problems';
 import { DifficultyBadge, StatusBadge } from '../components/Badges';
 import { EmptyState, ErrorState, Loading } from '../components/PageStates';
-import { formatDate } from '../lib/format';
+import { describeNextReview, formatDate, isDueToday } from '../lib/format';
+import ReviewButtons, { reviewFeedback, reviewProgress } from '../components/ReviewButtons';
 
 
 export default function ProblemDetailPage() {
@@ -101,6 +102,8 @@ export default function ProblemDetailPage() {
         </div>
       </section>
 
+      <ReviewSection problem={p} />
+
       <section className="card">
         <h2>Details</h2>
         <dl className="details">
@@ -151,5 +154,45 @@ export default function ProblemDetailPage() {
         </section>
       )}
     </article>
+  );
+}
+
+function ReviewSection({ problem: p }: { problem: Problem }) {
+  const [feedback, setFeedback] = useState('');
+
+  let body;
+  if (p.status === 'Todo' || p.status === 'Attempted') {
+    body = <p className="muted">Reviews start once you've solved it.</p>;
+  } else if (!p.nextReviewAt) {
+    body = <p className="muted">Mastered. No more reviews scheduled.</p>;
+  } else {
+    body = (
+      <>
+        <dl className="details">
+          <dt>Next review</dt>
+          <dd>
+            {describeNextReview(p.nextReviewAt)}
+            <span className="muted-inline"> · {formatDate(p.nextReviewAt)}</span>
+          </dd>
+          <dt>Progress</dt>
+          <dd>{reviewProgress(p)}</dd>
+        </dl>
+        {isDueToday(p.nextReviewAt) && (
+          <ReviewButtons problem={p} onReviewed={(updated) => setFeedback(reviewFeedback(updated))} />
+        )}
+      </>
+    );
+  }
+
+  return (
+    <section className="card" aria-labelledby="review-heading">
+      <h2 id="review-heading">Review</h2>
+      {feedback && (
+        <p className="review-feedback" role="status">
+          {feedback}
+        </p>
+      )}
+      {body}
+    </section>
   );
 }

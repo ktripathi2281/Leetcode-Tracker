@@ -20,6 +20,10 @@ const problemSchema = new Schema(
     timeTakenMinutes: { type: Number, default: null },
     lastSolvedAt: { type: Date, default: null },
     source: { type: String, enum: PROBLEM_SOURCES, default: 'manual' },
+    // Spaced repetition; see lib/reviews.ts.
+    nextReviewAt: { type: Date, default: null },
+    reviewStep: { type: Number, default: 0 },
+    lastReviewedAt: { type: Date, default: null },
   },
   { timestamps: true },
 );
@@ -33,6 +37,7 @@ problemSchema.index({ user: 1, updatedAt: -1 });
 problemSchema.index({ user: 1, status: 1 });
 problemSchema.index({ user: 1, tags: 1 });
 problemSchema.index({ user: 1, companyTags: 1 });
+problemSchema.index({ user: 1, nextReviewAt: 1 });
 
 export type ProblemDoc = HydratedDocument<InferSchemaType<typeof problemSchema>>;
 
@@ -56,6 +61,9 @@ export function toProblemDTO(p: ProblemDoc): ProblemDTO {
     timeTakenMinutes: p.timeTakenMinutes ?? null,
     lastSolvedAt: p.lastSolvedAt?.toISOString() ?? null,
     source: p.source,
+    nextReviewAt: p.nextReviewAt?.toISOString() ?? null,
+    reviewStep: p.reviewStep,
+    lastReviewedAt: p.lastReviewedAt?.toISOString() ?? null,
     createdAt: p.createdAt.toISOString(),
     updatedAt: p.updatedAt.toISOString(),
   };

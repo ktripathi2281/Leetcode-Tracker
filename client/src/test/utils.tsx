@@ -3,7 +3,7 @@ import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AxiosError, AxiosHeaders, type AxiosRequestConfig, type AxiosResponse } from 'axios';
-import type { AuthUser, LeetCodeAccount, Problem } from '@lct/shared';
+import type { AuthUser, LeetCodeAccount, Problem, StatsSummary } from '@lct/shared';
 import App from '../App';
 import { api } from '../api/client';
 import { setToken } from '../auth/tokenStorage';
@@ -41,6 +41,18 @@ export function mockGet(routes: Record<string, Handler | object>) {
   });
 }
 
+export function makeStats(overrides: Partial<StatsSummary> = {}): StatsSummary {
+  return {
+    total: 0,
+    byStatus: { Todo: 0, Attempted: 0, Solved: 0, Reviewing: 0, Mastered: 0 },
+    byDifficulty: { Easy: { total: 0, solved: 0 }, Medium: { total: 0, solved: 0 }, Hard: { total: 0, solved: 0 } },
+    dueNow: 0,
+    dueThisWeek: 0,
+    solvedThisWeek: 0,
+    ...overrides,
+  };
+}
+
 export const disconnected: LeetCodeAccount = { username: null, lastSyncedAt: null, lastResult: null };
 
 /** Answers POST requests by exact URL, like mockGet. */
@@ -61,7 +73,13 @@ export function mockPost(routes: Record<string, Handler | object>) {
 export function signedIn(routes: Record<string, Handler | object> = {}) {
   setToken('tok');
   mockPost({ '/leetcode/sync': { status: 'not-connected' } });
-  return mockGet({ '/auth/me': alice, '/health': health, '/leetcode/account': disconnected, ...routes });
+  return mockGet({
+    '/auth/me': alice,
+    '/health': health,
+    '/leetcode/account': disconnected,
+    '/stats/summary': makeStats(),
+    ...routes,
+  });
 }
 
 export function makeProblem(overrides: Partial<Problem> = {}): Problem {
@@ -82,6 +100,9 @@ export function makeProblem(overrides: Partial<Problem> = {}): Problem {
     timeTakenMinutes: null,
     lastSolvedAt: null,
     source: 'manual',
+    nextReviewAt: null,
+    reviewStep: 0,
+    lastReviewedAt: null,
     createdAt: '2026-09-01T00:00:00.000Z',
     updatedAt: '2026-09-02T00:00:00.000Z',
     ...overrides,

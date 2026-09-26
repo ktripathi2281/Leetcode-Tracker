@@ -55,6 +55,8 @@ export const problemListQuerySchema = z.object({
   tag: z.string().trim().min(1).max(40).optional(),
   company: z.string().trim().min(1).max(40).optional(),
   search: z.string().trim().min(1).max(100).optional(),
+  /** Only problems due for review by the end of today, most overdue first (ignores sort). */
+  due: z.stringbool().optional(),
   sort: z.enum(Object.keys(PROBLEM_SORTS) as [ProblemSort, ...ProblemSort[]]).default('recent'),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
@@ -83,6 +85,11 @@ export interface Problem {
   lastSolvedAt: string | null;
   /** How it got into the tracker. */
   source: ProblemSource;
+  /** When the next spaced-repetition review is due; null if not scheduled (unsolved or Mastered). */
+  nextReviewAt: string | null;
+  /** Successful reviews in a row; indexes REVIEW_INTERVALS_DAYS. */
+  reviewStep: number;
+  lastReviewedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }

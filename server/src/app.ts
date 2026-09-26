@@ -3,9 +3,11 @@ import cors from 'cors';
 import { env } from './config/env.js';
 import healthRoutes from './routes/health.js';
 import problemRoutes from './routes/problems.js';
+import statsRoutes from './routes/stats.js';
 import { authRouter } from './routes/auth.js';
 import { leetCodeRouter } from './routes/leetcode.js';
 import { errorHandler, notFound } from './middleware/errors.js';
+import { timeZone } from './middleware/timezone.js';
 
 export interface AppOptions {
   /** Max login/register attempts per IP per 15 minutes. */
@@ -20,10 +22,12 @@ export function createApp({ authRateLimit = 20, leetCodeLookupLimit = 30 }: AppO
 
   app.use(cors({ origin: env.CLIENT_URL, credentials: true }));
   app.use(express.json({ limit: '1mb' }));
+  app.use(timeZone);
 
   app.use('/api/health', healthRoutes);
   app.use('/api/auth', authRouter({ rateLimit: authRateLimit }));
   app.use('/api/problems', problemRoutes);
+  app.use('/api/stats', statsRoutes);
   app.use('/api/leetcode', leetCodeRouter({ lookupLimit: leetCodeLookupLimit }));
 
   app.use('/api', notFound);

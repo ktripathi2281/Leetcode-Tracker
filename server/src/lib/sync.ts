@@ -2,13 +2,17 @@ import { mongo, type Types } from 'mongoose';
 import { SYNC_WINDOW_DAYS, type SyncResult } from '@lct/shared';
 import { Problem } from '../models/Problem.js';
 import { getLeetCodeProblems, getRecentAcceptedSolves } from './leetcode.js';
+import { isScheduled, recordReview, scheduleFromSolve } from './reviews.js';
+import { DAY_MS } from './time.js';
 
-const DAY_MS = 24 * 60 * 60 * 1000;
+/** A LeetCode re-solve this close before the review is due still counts as the review ("due today"). */
+const EARLY_REVIEW_MS = 12 * 60 * 60 * 1000;
 
 /**
  * Imports the user's recent LeetCode solves from the last SYNC_WINDOW_DAYS.
- * New problems are created as Solved; tracked ones become Solved (if Todo/Attempted)
- * and get the newer solve date. Running it twice changes nothing the second time.
+ * New problems are created as Solved and scheduled for review from their solve date.
+ * Tracked ones become Solved (if Todo/Attempted); re-solving a problem that's due for
+ * review counts as a successful review. Running it twice changes nothing the second time.
  * Throws LeetCodeUnavailableError if LeetCode can't be reached; nothing is saved then.
  */
 export async function syncLeetCodeSolves(userId: Types.ObjectId, username: string): Promise<SyncResult> {
@@ -35,14 +39,16 @@ export async function syncLeetCodeSolves(userId: Types.ObjectId, username: strin
   for (const [slug, solvedAt] of recent) {
     const problem = tracked.get(slug);
     if (problem) {
-      let changed = false;
+      let changed = true;
       if (problem.status === 'Todo' || problem.status === 'Attempted') {
         problem.status = 'Solved';
-        changed = true;
-      }
-      if (!problem.lastSolvedAt || problem.lastSolvedAt < solvedAt) {
+        scheduleFromSolve(problem, solvedAt);
+      } else if (isScheduled(problem) && solvedAt.getTime() >= problem.nextReviewAt!.getTime() - EARLY_REVIEW_MS) {
+        recordReview(problem, 'remembered', solvedAt);
+      } else if (!problem.lastSolvedAt || problem.lastSolvedAt < solvedAt) {
         problem.lastSolvedAt = solvedAt;
-        changed = true;
+      } else {
+        changed = false;
       }
       if (changed) {
         await problem.save();
@@ -59,7 +65,7 @@ export async function syncLeetCodeSolves(userId: Types.ObjectId, username: strin
       continue;
     }
     try {
-      await Problem.create({
+      const created = new Problem({
         user: userId,
         title: info.title,
         slug,
@@ -68,9 +74,10 @@ export async function syncLeetCodeSolves(userId: Types.ObjectId, username: strin
         tags: info.tags,
         link: info.link,
         status: 'Solved',
-        lastSolvedAt: solvedAt,
         source: 'sync',
       });
+      scheduleFromSolve(created, solvedAt);
+      await created.save();
       result.added++;
     } catch (err) {
       // Added by a request that ran at the same time.

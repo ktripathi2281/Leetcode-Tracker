@@ -8,6 +8,8 @@ declare global {
       user?: AuthUser;
       /** Set by requireAuth; use this (not user.id) in database queries. */
       userId?: Types.ObjectId;
+      /** The user's IANA time zone, set by the timeZone middleware (UTC by default). */
+      timeZone: string;
     }
   }
 }

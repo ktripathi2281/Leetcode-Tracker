@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { ApiError } from '@lct/shared';
+import { TIMEZONE_HEADER, type ApiError } from '@lct/shared';
 import { getToken } from '../auth/tokenStorage';
 
 // Same-origin '/api' in development (proxied by Vite); set VITE_API_URL in production.
@@ -8,9 +8,13 @@ export const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
+// The browser's time zone, so the server's "due today" matches the user's calendar day.
+const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
 api.interceptors.request.use((config) => {
   const token = getToken();
   if (token) config.headers.Authorization = `Bearer ${token}`;
+  if (timeZone) config.headers[TIMEZONE_HEADER] = timeZone;
   return config;
 });
 

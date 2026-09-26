@@ -2,10 +2,12 @@ import { useEffect } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router';
 import { useAuth, useCurrentUser } from '../auth/AuthContext';
 import { useAutoSync } from '../api/leetcode';
+import { useStatsSummary } from '../api/problems';
 
 const NAV = [
   { to: '/', label: 'Home', end: true },
   { to: '/problems', label: 'Problems', end: false },
+  { to: '/reviews', label: 'Reviews', end: false },
   { to: '/settings', label: 'Settings', end: false },
 ];
 
@@ -14,6 +16,7 @@ export default function AppLayout() {
   const { logout } = useAuth();
   const { pathname } = useLocation();
   useAutoSync();
+  const dueNow = useStatsSummary().data?.dueNow ?? 0;
 
   // Start each new page at the top (filter changes keep the same path, so they don't jump).
   // Block body: newer browsers return a Promise from scrollTo, which React would treat as a cleanup.
@@ -35,6 +38,11 @@ export default function AppLayout() {
             {NAV.map((item) => (
               <NavLink key={item.to} to={item.to} end={item.end} className="nav-link">
                 {item.label}
+                {item.to === '/reviews' && dueNow > 0 && (
+                  <span className="nav-count" aria-label={`${dueNow} due`}>
+                    {dueNow}
+                  </span>
+                )}
               </NavLink>
             ))}
           </nav>

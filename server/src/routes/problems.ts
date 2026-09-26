@@ -3,6 +3,7 @@ import { isValidObjectId, mongo, type QueryFilter, type SortOrder } from 'mongoo
 import {
   createProblemSchema,
   problemListQuerySchema,
+  reviewSchema,
   slugFromLeetCodeUrl,
   updateProblemSchema,
   type ApiError,
@@ -10,11 +11,14 @@ import {
   type ProblemFacets,
   type ProblemListResponse,
   type ProblemSort,
+  type ReviewInput,
   type UpdateProblemInput,
 } from '@lct/shared';
 import { Problem, toProblemDTO, type ProblemDoc } from '../models/Problem.js';
 import { requireAuth } from '../middleware/auth.js';
 import { sendValidationError, validateBody } from '../middleware/validate.js';
+import { applyStatusChange, isScheduled, recordReview } from '../lib/reviews.js';
+import { startOfNextLocalDay } from '../lib/time.js';
 
 const router = Router();
 router.use(requireAuth);
@@ -25,8 +29,6 @@ const SORTS: Record<ProblemSort, Record<string, SortOrder>> = {
   number: { leetcodeNumber: 1, _id: 1 },
   title: { title: 1, _id: 1 },
 };
-
-const SOLVED = new Set(['Solved', 'Mastered']);
 
 const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -54,7 +56,7 @@ router.get('/', async (req, res) => {
     sendValidationError(res, parsed.error);
     return;
   }
-  const { status, difficulty, tag, company, search, sort, page, limit } = parsed.data;
+  const { status, difficulty, tag, company, search, due, sort, page, limit } = parsed.data;
 
   const filter: QueryFilter<ProblemDoc> = { user: req.userId };
   if (status) filter.status = status;
@@ -67,11 +69,12 @@ router.get('/', async (req, res) => {
     if (Number.isInteger(number) && number > 0) or.push({ leetcodeNumber: number });
     filter.$or = or;
   }
+  if (due) filter.nextReviewAt = { $ne: null, $lt: startOfNextLocalDay(new Date(), req.timeZone) };
 
   const [total, problems] = await Promise.all([
     Problem.countDocuments(filter),
     Problem.find(filter)
-      .sort(SORTS[sort])
+      .sort(due ? { nextReviewAt: 1, _id: 1 } : SORTS[sort])
       .collation({ locale: 'en' }) // case-insensitive title sort
       .skip((page - 1) * limit)
       .limit(limit),
@@ -113,8 +116,10 @@ router.post('/', validateBody(createProblemSchema), async (req, res) => {
   const slug = input.link ? slugFromLeetCodeUrl(input.link) : null;
 
   try {
-    const lastSolvedAt = input.status && SOLVED.has(input.status) ? new Date() : null;
-    const problem = await Problem.create({ ...input, slug, lastSolvedAt, user: req.userId });
+    const { status = 'Todo', ...fields } = input;
+    const problem = new Problem({ ...fields, slug, user: req.userId });
+    applyStatusChange(problem, status, new Date());
+    await problem.save();
     res.status(201).json(toProblemDTO(problem));
   } catch (err) {
     if (isDuplicateKey(err)) return sendDuplicate(req, res, slug);
@@ -130,11 +135,10 @@ router.patch('/:id', validateBody(updateProblemSchema), async (req, res) => {
     return;
   }
 
-  const input = req.body as UpdateProblemInput;
-  // Moving into Solved/Mastered from another status counts as solving it now.
-  if (input.status && SOLVED.has(input.status) && !SOLVED.has(problem.status)) problem.lastSolvedAt = new Date();
-  problem.set(input);
-  if (input.link !== undefined) problem.slug = input.link ? slugFromLeetCodeUrl(input.link) : null;
+  const { status, ...fields } = req.body as UpdateProblemInput;
+  if (status) applyStatusChange(problem, status, new Date());
+  problem.set(fields);
+  if (fields.link !== undefined) problem.slug = fields.link ? slugFromLeetCodeUrl(fields.link) : null;
 
   try {
     await problem.save();
@@ -143,6 +147,22 @@ router.patch('/:id', validateBody(updateProblemSchema), async (req, res) => {
     if (isDuplicateKey(err)) return sendDuplicate(req, res, problem.slug ?? null);
     throw err;
   }
+});
+
+// POST /api/problems/:id/review — record how a spaced-repetition review went
+router.post('/:id/review', validateBody(reviewSchema), async (req, res) => {
+  const problem = await findOwnProblem(req);
+  if (!problem) {
+    notFound(res);
+    return;
+  }
+  if (!isScheduled(problem)) {
+    res.status(400).json({ message: 'This problem has no review scheduled' } satisfies ApiError);
+    return;
+  }
+  recordReview(problem, (req.body as ReviewInput).outcome, new Date());
+  await problem.save();
+  res.json(toProblemDTO(problem));
 });
 
 // DELETE /api/problems/:id

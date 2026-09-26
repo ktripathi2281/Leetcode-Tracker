@@ -12,7 +12,7 @@ import { DifficultyBadge, StatusBadge } from '../components/Badges';
 import { EmptyState, ErrorState, Loading } from '../components/PageStates';
 import SyncBar from '../components/SyncBar';
 
-const FILTER_KEYS = ['status', 'difficulty', 'tag', 'company', 'search'] as const;
+const FILTER_KEYS = ['status', 'difficulty', 'tag', 'company', 'search', 'due'] as const;
 const SEARCH_DELAY_MS = 300;
 
 /** Filters live in the URL, so they survive reloads, can be shared, and work with Back. */
@@ -121,13 +121,25 @@ export default function ProblemsPage() {
             ))}
           </select>
         )}
-        <select aria-label="Sort by" value={query.sort} onChange={(e) => update('sort', e.target.value)}>
+        <select
+          aria-label="Sort by"
+          value={query.sort}
+          onChange={(e) => update('sort', e.target.value)}
+          disabled={!!query.due} // due problems are always listed most overdue first
+        >
           {Object.entries(PROBLEM_SORTS).map(([value, label]) => (
             <option key={value} value={value}>
               {label}
             </option>
           ))}
         </select>
+        <button
+          className="btn btn-secondary filter-toggle"
+          aria-pressed={!!query.due}
+          onClick={() => update('due', query.due ? undefined : 'true')}
+        >
+          Due for review
+        </button>
         {filtered && (
           <button className="btn btn-ghost" onClick={clear}>
             Clear filters

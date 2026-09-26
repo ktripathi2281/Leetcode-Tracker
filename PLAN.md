@@ -28,7 +28,11 @@ public, multi-user app.
      **auto-syncs** when opened if the last sync was over 12 hours ago, and says so in the UI.
    - Already-tracked problems aren't duplicated: Todo/Attempted become Solved, and the
      last-solved date is updated.
-5. **Spaced repetition** — review scheduling (1/3/7/14/30/60 days) in one place, due-review queue, dashboard cards.
+5. ✅ **Spaced repetition** — review scheduling (1/3/7/14/30/60 days) in one place, due-review queue, dashboard cards.
+   - Review session: "I solved it again" advances the interval; "I needed help" resets to 1 day.
+     Passing the 60-day review marks a problem Mastered.
+   - Re-solving a due problem on LeetCode (seen by sync) counts as a successful review.
+   - "Due today" follows the user's time zone (sent by the browser).
 6. **Analytics** — topic breakdown, solve velocity, company readiness, charts.
 7. **Agents** — one at a time, each logged to AgentLog, each with **per-user daily limits**
    (protects the Gemini bill):
@@ -67,5 +71,4 @@ public, multi-user app.
 - Group solve velocity by the user's timezone rather than UTC.
 
 ## Nice-to-have (later)
-- Review mode: "did you remember it?" button that adjusts the next interval.
 - Firefox version of the extension.

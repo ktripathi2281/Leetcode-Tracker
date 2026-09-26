@@ -21,7 +21,26 @@ export function timeAgo(iso: string, now = Date.now()): string {
   return 'just now';
 }
 
-const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+export const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
+const startOfLocalDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+/** Whole calendar days from today to the date (0 = today, negative = past), in local time. */
+function calendarDaysFromToday(iso: string, now: Date) {
+  return Math.round((startOfLocalDay(new Date(iso)).getTime() - startOfLocalDay(now).getTime()) / 86_400_000);
+}
+
+/** Due by the end of today, like the server's due list. */
+export const isDueToday = (iso: string | null, now = new Date()) => iso !== null && calendarDaysFromToday(iso, now) <= 0;
+
+/** "Due today", "Overdue by 3 days", "Tomorrow", "In 6 days". */
+export function describeNextReview(iso: string, now = new Date()): string {
+  const days = calendarDaysFromToday(iso, now);
+  if (days < 0) return `Overdue by ${plural(-days, 'day')}`;
+  if (days === 0) return 'Due today';
+  if (days === 1) return 'Tomorrow';
+  return `In ${days} days`;
+}
 
 export function describeSyncResult(r: SyncResult): string {
   const changes: string[] = [];
