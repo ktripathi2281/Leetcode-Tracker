@@ -4,6 +4,7 @@ export * from './auth';
 export * from './constants';
 export * from './leetcode';
 export * from './problems';
+export * from './sync';
 
 export interface HealthResponse {
   status: 'ok';

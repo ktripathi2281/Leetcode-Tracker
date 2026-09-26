@@ -26,6 +26,8 @@ const SORTS: Record<ProblemSort, Record<string, SortOrder>> = {
   title: { title: 1, _id: 1 },
 };
 
+const SOLVED = new Set(['Solved', 'Mastered']);
+
 const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const notFound = (res: Response) => res.status(404).json({ message: 'Problem not found' } satisfies ApiError);
@@ -111,7 +113,8 @@ router.post('/', validateBody(createProblemSchema), async (req, res) => {
   const slug = input.link ? slugFromLeetCodeUrl(input.link) : null;
 
   try {
-    const problem = await Problem.create({ ...input, slug, user: req.userId });
+    const lastSolvedAt = input.status && SOLVED.has(input.status) ? new Date() : null;
+    const problem = await Problem.create({ ...input, slug, lastSolvedAt, user: req.userId });
     res.status(201).json(toProblemDTO(problem));
   } catch (err) {
     if (isDuplicateKey(err)) return sendDuplicate(req, res, slug);
@@ -128,6 +131,8 @@ router.patch('/:id', validateBody(updateProblemSchema), async (req, res) => {
   }
 
   const input = req.body as UpdateProblemInput;
+  // Moving into Solved/Mastered from another status counts as solving it now.
+  if (input.status && SOLVED.has(input.status) && !SOLVED.has(problem.status)) problem.lastSolvedAt = new Date();
   problem.set(input);
   if (input.link !== undefined) problem.slug = input.link ? slugFromLeetCodeUrl(input.link) : null;
 

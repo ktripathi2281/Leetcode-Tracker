@@ -61,6 +61,9 @@ export const problemListQuerySchema = z.object({
 });
 export type ProblemListQuery = z.output<typeof problemListQuerySchema>;
 
+export const PROBLEM_SOURCES = ['manual', 'sync'] as const;
+export type ProblemSource = (typeof PROBLEM_SOURCES)[number];
+
 export interface Problem {
   id: string;
   title: string;
@@ -76,6 +79,10 @@ export interface Problem {
   approach: string;
   notes: string;
   timeTakenMinutes: number | null;
+  /** When it was last solved (from LeetCode sync, or when marked Solved). */
+  lastSolvedAt: string | null;
+  /** How it got into the tracker. */
+  source: ProblemSource;
   createdAt: string;
   updatedAt: string;
 }

@@ -1,5 +1,5 @@
 import { Schema, model, type HydratedDocument, type InferSchemaType } from 'mongoose';
-import { DIFFICULTIES, LANGUAGE_IDS, STATUSES, type Problem as ProblemDTO } from '@lct/shared';
+import { DIFFICULTIES, LANGUAGE_IDS, PROBLEM_SOURCES, STATUSES, type Problem as ProblemDTO } from '@lct/shared';
 
 const problemSchema = new Schema(
   {
@@ -18,6 +18,8 @@ const problemSchema = new Schema(
     approach: { type: String, default: '' },
     notes: { type: String, default: '' },
     timeTakenMinutes: { type: Number, default: null },
+    lastSolvedAt: { type: Date, default: null },
+    source: { type: String, enum: PROBLEM_SOURCES, default: 'manual' },
   },
   { timestamps: true },
 );
@@ -52,6 +54,8 @@ export function toProblemDTO(p: ProblemDoc): ProblemDTO {
     approach: p.approach,
     notes: p.notes,
     timeTakenMinutes: p.timeTakenMinutes ?? null,
+    lastSolvedAt: p.lastSolvedAt?.toISOString() ?? null,
+    source: p.source,
     createdAt: p.createdAt.toISOString(),
     updatedAt: p.updatedAt.toISOString(),
   };

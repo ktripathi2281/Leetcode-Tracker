@@ -6,9 +6,8 @@ import { getErrorMessage } from '../api/client';
 import { useDeleteProblem, useProblem, useUpdateProblem } from '../api/problems';
 import { DifficultyBadge, StatusBadge } from '../components/Badges';
 import { EmptyState, ErrorState, Loading } from '../components/PageStates';
+import { formatDate } from '../lib/format';
 
-const formatDate = (iso: string) =>
-  new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 
 export default function ProblemDetailPage() {
   const id = useParams().id!;
@@ -109,10 +108,15 @@ export default function ProblemDetailPage() {
           <dd>{p.tags.length ? p.tags.map((t) => <span key={t} className="chip">{t}</span>) : '—'}</dd>
           <dt>Companies</dt>
           <dd>{p.companyTags.length ? p.companyTags.map((c) => <span key={c} className="chip chip-company">{c}</span>) : '—'}</dd>
+          <dt>Last solved</dt>
+          <dd>{p.lastSolvedAt ? formatDate(p.lastSolvedAt) : '—'}</dd>
           <dt>Time taken</dt>
           <dd>{p.timeTakenMinutes ? `${p.timeTakenMinutes} min` : '—'}</dd>
           <dt>Added</dt>
-          <dd>{formatDate(p.createdAt)}</dd>
+          <dd>
+            {formatDate(p.createdAt)}
+            {p.source === 'sync' && <span className="muted-inline"> · imported from LeetCode</span>}
+          </dd>
           <dt>Last updated</dt>
           <dd>{formatDate(p.updatedAt)}</dd>
         </dl>

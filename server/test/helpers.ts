@@ -17,6 +17,7 @@ export async function signUp(app: Express) {
     user,
     get: (url: string) => request(app).get(url).set(auth),
     post: (url: string, body?: object) => request(app).post(url).set(auth).send(body),
+    put: (url: string, body?: object) => request(app).put(url).set(auth).send(body),
     patch: (url: string, body?: object) => request(app).patch(url).set(auth).send(body),
     delete: (url: string) => request(app).delete(url).set(auth),
   };

@@ -10,6 +10,7 @@ import {
 import { useProblemFacets, useProblemList } from '../api/problems';
 import { DifficultyBadge, StatusBadge } from '../components/Badges';
 import { EmptyState, ErrorState, Loading } from '../components/PageStates';
+import SyncBar from '../components/SyncBar';
 
 const FILTER_KEYS = ['status', 'difficulty', 'tag', 'company', 'search'] as const;
 const SEARCH_DELAY_MS = 300;
@@ -51,7 +52,9 @@ export default function ProblemsPage() {
 
   // Search box updates the URL after a short pause in typing.
   const [search, setSearch] = useState(query.search ?? '');
-  useEffect(() => setSearch(query.search ?? ''), [query.search]);
+  useEffect(() => {
+    setSearch(query.search ?? '');
+  }, [query.search]);
   useEffect(() => {
     if (search.trim() === (query.search ?? '')) return;
     const timer = setTimeout(() => update('search', search.trim(), { replace: true }), SEARCH_DELAY_MS);
@@ -74,6 +77,8 @@ export default function ProblemsPage() {
           Add problem
         </Link>
       </div>
+
+      <SyncBar />
 
       <div className="filters" role="search">
         <input
@@ -143,7 +148,9 @@ export default function ProblemsPage() {
           </EmptyState>
         ) : (
           <EmptyState title="No problems yet">
-            <p className="muted">Add a problem you're working on. Paste its LeetCode link and the details fill in.</p>
+            <p className="muted">
+              Add a problem you're working on, or <Link to="/settings">import your recent LeetCode solves</Link>.
+            </p>
             <Link to="/problems/new" className="btn btn-primary">
               Add your first problem
             </Link>

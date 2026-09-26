@@ -97,7 +97,7 @@ describe('adding a problem', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Save problem' }));
     expect(screen.getByText('Title is required')).toBeInTheDocument();
     expect(screen.getByText('Choose a difficulty')).toBeInTheDocument();
-    expect(post).not.toHaveBeenCalled();
+    expect(post).not.toHaveBeenCalledWith('/problems', expect.anything());
   });
 
   it('links to the existing problem when it is already tracked', async () => {

@@ -20,9 +20,14 @@ public, multi-user app.
    Includes **LeetCode URL auto-fill**: paste a problem link, server fetches title, number,
    difficulty and tags. Problem metadata is cached in a shared collection (it never changes),
    so each problem is fetched from LeetCode at most once across all users.
-4. **LeetCode username sync** — user saves their LeetCode username; a "Sync" button imports
+4. ✅ **LeetCode username sync** — user saves their LeetCode username; a "Sync" button imports
    their recent accepted submissions (public data, no login) as Solved problems with the
    correct solve date. Skips problems already tracked. Requests are throttled.
+   - Only solves from the **last 3 months** (by LeetCode solve date) are imported.
+   - LeetCode's public data shows only the **20 most recent** accepted solves, so the app
+     **auto-syncs** when opened if the last sync was over 12 hours ago, and says so in the UI.
+   - Already-tracked problems aren't duplicated: Todo/Attempted become Solved, and the
+     last-solved date is updated.
 5. **Spaced repetition** — review scheduling (1/3/7/14/30/60 days) in one place, due-review queue, dashboard cards.
 6. **Analytics** — topic breakdown, solve velocity, company readiness, charts.
 7. **Agents** — one at a time, each logged to AgentLog, each with **per-user daily limits**

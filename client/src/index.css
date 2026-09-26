@@ -198,6 +198,11 @@ a.btn { display: inline-block; text-decoration: none; }
 .code-block { margin: 0; padding: 16px; background: var(--code-bg); border-radius: 8px; overflow-x: auto; font-size: 0.85rem; line-height: 1.6; }
 .code-block, .code-input { font-family: ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace; }
 
+/* LeetCode sync */
+.sync-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 0 0 12px; padding: 8px 8px 8px 14px; font-size: 0.875rem; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.settings-intro { margin-bottom: 16px; }
+.note { margin-top: 16px; max-width: 60ch; }
+
 /* Problem form */
 .problem-form { max-width: 760px; }
 .form-section + .form-section { margin-top: 16px; }
