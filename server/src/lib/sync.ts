@@ -3,6 +3,7 @@ import { SYNC_WINDOW_DAYS, type SyncResult } from '@lct/shared';
 import { Problem } from '../models/Problem.js';
 import { getLeetCodeProblems, getRecentAcceptedSolves } from './leetcode.js';
 import { isScheduled, recordReview, scheduleFromSolve } from './reviews.js';
+import { logActivity } from './activity.js';
 import { DAY_MS } from './time.js';
 
 /** A LeetCode re-solve this close before the review is due still counts as the review ("due today"). */
@@ -40,11 +41,13 @@ export async function syncLeetCodeSolves(userId: Types.ObjectId, username: strin
     const problem = tracked.get(slug);
     if (problem) {
       let changed = true;
+      let countsAsReview = false;
       if (problem.status === 'Todo' || problem.status === 'Attempted') {
         problem.status = 'Solved';
         scheduleFromSolve(problem, solvedAt);
       } else if (isScheduled(problem) && solvedAt.getTime() >= problem.nextReviewAt!.getTime() - EARLY_REVIEW_MS) {
         recordReview(problem, 'remembered', solvedAt);
+        countsAsReview = true;
       } else if (!problem.lastSolvedAt || problem.lastSolvedAt < solvedAt) {
         problem.lastSolvedAt = solvedAt;
       } else {
@@ -52,6 +55,7 @@ export async function syncLeetCodeSolves(userId: Types.ObjectId, username: strin
       }
       if (changed) {
         await problem.save();
+        await logActivity(problem, solvedAt, countsAsReview ? 'remembered' : undefined);
         result.updated++;
       } else {
         result.unchanged++;
@@ -78,6 +82,7 @@ export async function syncLeetCodeSolves(userId: Types.ObjectId, username: strin
       });
       scheduleFromSolve(created, solvedAt);
       await created.save();
+      await logActivity(created, solvedAt);
       result.added++;
     } catch (err) {
       // Added by a request that ran at the same time.

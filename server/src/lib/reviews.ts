@@ -20,10 +20,11 @@ export function scheduleFromSolve(problem: ProblemDoc, at: Date) {
 /**
  * Applies a status the user chose, keeping the schedule consistent with it.
  * Call before other fields are set, while `problem.status` is still the old value.
+ * Returns true if the change counts as solving it now (from Todo/Attempted to solved).
  */
-export function applyStatusChange(problem: ProblemDoc, next: Status, now: Date) {
+export function applyStatusChange(problem: ProblemDoc, next: Status, now: Date): boolean {
   const previous = problem.status;
-  if (next === previous) return;
+  if (next === previous) return false;
 
   if (next === 'Todo' || next === 'Attempted') {
     problem.nextReviewAt = null;
@@ -39,6 +40,8 @@ export function applyStatusChange(problem: ProblemDoc, next: Status, now: Date) 
     problem.nextReviewAt = now;
   }
   problem.status = next;
+  const wasUnsolved = previous === 'Todo' || previous === 'Attempted';
+  return wasUnsolved && (next === 'Solved' || next === 'Mastered');
 }
 
 /** The outcome of reviewing a scheduled problem at time `at`. */

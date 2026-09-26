@@ -10,6 +10,7 @@ import ProblemDetailPage from './pages/ProblemDetailPage';
 import { EditProblemPage, NewProblemPage } from './pages/ProblemFormPages';
 import SettingsPage from './pages/SettingsPage';
 import ReviewsPage from './pages/ReviewsPage';
+import AnalyticsPage from './pages/AnalyticsPage';
 
 // The router and query client are provided by main.tsx, or by tests.
 export default function App() {
@@ -28,6 +29,7 @@ export default function App() {
             <Route path="problems/:id" element={<ProblemDetailPage />} />
             <Route path="problems/:id/edit" element={<EditProblemPage />} />
             <Route path="reviews" element={<ReviewsPage />} />
+            <Route path="analytics" element={<AnalyticsPage />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>
         </Route>

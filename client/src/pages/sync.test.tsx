@@ -34,7 +34,8 @@ describe('auto-sync', () => {
     signedIn();
     renderApp('/');
     await screen.findByRole('heading', { name: 'Welcome back, alice' });
-    expect(api.post).toHaveBeenCalledWith('/leetcode/sync', { auto: true });
+    // The sync starts in an effect, which can run just after the first paint.
+    await waitFor(() => expect(api.post).toHaveBeenCalledWith('/leetcode/sync', { auto: true }));
     expect(api.post).toHaveBeenCalledTimes(1);
   });
 

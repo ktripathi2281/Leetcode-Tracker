@@ -18,6 +18,8 @@ import { Problem, toProblemDTO, type ProblemDoc } from '../models/Problem.js';
 import { requireAuth } from '../middleware/auth.js';
 import { sendValidationError, validateBody } from '../middleware/validate.js';
 import { applyStatusChange, isScheduled, recordReview } from '../lib/reviews.js';
+import { logActivity } from '../lib/activity.js';
+import { Activity } from '../models/Activity.js';
 import { startOfNextLocalDay } from '../lib/time.js';
 
 const router = Router();
@@ -117,9 +119,11 @@ router.post('/', validateBody(createProblemSchema), async (req, res) => {
 
   try {
     const { status = 'Todo', ...fields } = input;
+    const now = new Date();
     const problem = new Problem({ ...fields, slug, user: req.userId });
-    applyStatusChange(problem, status, new Date());
+    const solved = applyStatusChange(problem, status, now);
     await problem.save();
+    if (solved) await logActivity(problem, now);
     res.status(201).json(toProblemDTO(problem));
   } catch (err) {
     if (isDuplicateKey(err)) return sendDuplicate(req, res, slug);
@@ -135,13 +139,15 @@ router.patch('/:id', validateBody(updateProblemSchema), async (req, res) => {
     return;
   }
 
+  const now = new Date();
   const { status, ...fields } = req.body as UpdateProblemInput;
-  if (status) applyStatusChange(problem, status, new Date());
+  const solved = status ? applyStatusChange(problem, status, now) : false;
   problem.set(fields);
   if (fields.link !== undefined) problem.slug = fields.link ? slugFromLeetCodeUrl(fields.link) : null;
 
   try {
     await problem.save();
+    if (solved) await logActivity(problem, now);
     res.json(toProblemDTO(problem));
   } catch (err) {
     if (isDuplicateKey(err)) return sendDuplicate(req, res, problem.slug ?? null);
@@ -160,8 +166,11 @@ router.post('/:id/review', validateBody(reviewSchema), async (req, res) => {
     res.status(400).json({ message: 'This problem has no review scheduled' } satisfies ApiError);
     return;
   }
-  recordReview(problem, (req.body as ReviewInput).outcome, new Date());
+  const { outcome } = req.body as ReviewInput;
+  const now = new Date();
+  recordReview(problem, outcome, now);
   await problem.save();
+  await logActivity(problem, now, outcome);
   res.json(toProblemDTO(problem));
 });
 
@@ -173,6 +182,8 @@ router.delete('/:id', async (req, res) => {
     notFound(res);
     return;
   }
+  // A problem added by mistake shouldn't leave solves behind in the charts.
+  await Activity.deleteMany({ problem: id, user: req.userId });
   res.status(204).end();
 });
 

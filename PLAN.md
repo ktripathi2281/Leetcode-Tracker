@@ -33,7 +33,11 @@ public, multi-user app.
      Passing the 60-day review marks a problem Mastered.
    - Re-solving a due problem on LeetCode (seen by sync) counts as a successful review.
    - "Due today" follows the user's time zone (sent by the browser).
-6. **Analytics** — topic breakdown, solve velocity, company readiness, charts.
+6. ✅ **Analytics** — topic breakdown, solve velocity, company readiness, charts.
+   - An activity log records every solve and review (history is rebuilt approximately for
+     older data), so activity charts and streaks survive re-solves.
+   - Weekly solves/reviews and streaks follow the user's time zone; topics show mastered /
+     practising / unsolved and "needed help" reviews; chart colors validated for both themes.
 7. **Agents** — one at a time, each logged to AgentLog, each with **per-user daily limits**
    (protects the Gemini bill):
    a. Post-Mortem Analyzer (structured JSON output)

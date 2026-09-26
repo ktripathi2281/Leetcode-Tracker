@@ -8,7 +8,7 @@ const NAV = [
   { to: '/', label: 'Home', end: true },
   { to: '/problems', label: 'Problems', end: false },
   { to: '/reviews', label: 'Reviews', end: false },
-  { to: '/settings', label: 'Settings', end: false },
+  { to: '/analytics', label: 'Analytics', end: false },
 ];
 
 export default function AppLayout() {
@@ -48,10 +48,13 @@ export default function AppLayout() {
           </nav>
         </div>
         <div className="topbar-user">
-          <span className="avatar" aria-hidden="true">
-            {user.username.charAt(0).toUpperCase()}
-          </span>
-          <span className="topbar-username">{user.username}</span>
+          {/* Account settings live behind your name, the usual place to look. */}
+          <NavLink to="/settings" className="user-link" title="Settings" aria-label={`Settings for ${user.username}`}>
+            <span className="avatar" aria-hidden="true">
+              {user.username.charAt(0).toUpperCase()}
+            </span>
+            <span className="topbar-username">{user.username}</span>
+          </NavLink>
           <button className="btn btn-ghost" onClick={logout}>
             Sign out
           </button>

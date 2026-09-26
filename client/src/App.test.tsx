@@ -83,6 +83,12 @@ describe('with a saved session', () => {
     expect(getToken()).toBeNull();
   });
 
+  it('links to settings from your name in the header', async () => {
+    signedIn();
+    renderApp('/');
+    expect(await screen.findByRole('link', { name: 'Settings for alice' })).toHaveAttribute('href', '/settings');
+  });
+
   it('clears an expired session and asks to sign in again', async () => {
     signedIn({ '/auth/me': () => apiError(401, { message: 'Please sign in to continue.' }) });
     renderApp('/');
