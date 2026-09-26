@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import axios from 'axios';
+import { useQueryClient } from '@tanstack/react-query';
 import type { AuthResponse, AuthUser, LoginInput, RegisterInput } from '@lct/shared';
 import { api, setUnauthorizedHandler } from '../api/client';
 import { clearToken, getToken, setToken } from './tokenStorage';
@@ -23,10 +24,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     getToken() ? { status: 'loading' } : { status: 'anonymous' },
   );
 
+  const queryClient = useQueryClient();
+
+  // Drop cached data too, so the next person on this browser can't see it.
   const logout = useCallback(() => {
     clearToken();
+    queryClient.clear();
     setState({ status: 'anonymous' });
-  }, []);
+  }, [queryClient]);
 
   // A stored token may be expired or belong to a deleted account, so confirm it with the server.
   useEffect(() => {
@@ -50,10 +55,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => setUnauthorizedHandler(undefined);
   }, [logout]);
 
-  const signIn = useCallback((data: AuthResponse) => {
-    setToken(data.token);
-    setState({ status: 'authenticated', user: data.user });
-  }, []);
+  const signIn = useCallback(
+    (data: AuthResponse) => {
+      setToken(data.token);
+      queryClient.clear();
+      setState({ status: 'authenticated', user: data.user });
+    },
+    [queryClient],
+  );
 
   const login = useCallback(
     async (input: LoginInput) => signIn((await api.post<AuthResponse>('/auth/login', input)).data),

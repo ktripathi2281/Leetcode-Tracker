@@ -16,7 +16,7 @@ public, multi-user app.
 1. ✅ **Scaffold** — workspaces, TS config, lint, `.env.example`, `npm run dev` runs both apps, health check.
 2. ✅ **Auth** — register / login / me, protected routes, token handling on the client.
    Public-ready from the start: login rate limiting, stronger password rules (min 8 chars).
-3. **Problem log** — CRUD, filters, search, pagination, Add/Edit/Detail pages.
+3. ✅ **Problem log** — CRUD, filters, search, pagination, Add/Edit/Detail pages.
    Includes **LeetCode URL auto-fill**: paste a problem link, server fetches title, number,
    difficulty and tags. Problem metadata is cached in a shared collection (it never changes),
    so each problem is fetched from LeetCode at most once across all users.

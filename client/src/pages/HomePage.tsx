@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router';
 import type { HealthResponse } from '@lct/shared';
 import { api } from '../api/client';
 import { useCurrentUser } from '../auth/AuthContext';
@@ -31,7 +32,9 @@ export default function HomePage() {
   return (
     <>
       <h1>Welcome back, {user.username}</h1>
-      <p className="muted">Problem tracking, reviews and analytics are coming next.</p>
+      <p className="muted">
+        Track what you're working on in <Link to="/problems">Problems</Link>. Reviews and analytics are coming next.
+      </p>
 
       <section className="card" aria-labelledby="status-heading">
         <h2 id="status-heading">System status</h2>

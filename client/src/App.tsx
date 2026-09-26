@@ -5,8 +5,11 @@ import AppLayout from './components/AppLayout';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ProblemsPage from './pages/ProblemsPage';
+import ProblemDetailPage from './pages/ProblemDetailPage';
+import { EditProblemPage, NewProblemPage } from './pages/ProblemFormPages';
 
-// The router itself is provided by main.tsx (BrowserRouter) or by tests (MemoryRouter).
+// The router and query client are provided by main.tsx, or by tests.
 export default function App() {
   return (
     <AuthProvider>
@@ -18,6 +21,10 @@ export default function App() {
         <Route element={<RequireAuth />}>
           <Route element={<AppLayout />}>
             <Route index element={<HomePage />} />
+            <Route path="problems" element={<ProblemsPage />} />
+            <Route path="problems/new" element={<NewProblemPage />} />
+            <Route path="problems/:id" element={<ProblemDetailPage />} />
+            <Route path="problems/:id/edit" element={<EditProblemPage />} />
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
