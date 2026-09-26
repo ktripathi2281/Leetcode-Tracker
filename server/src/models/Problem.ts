@@ -25,6 +25,8 @@ const problemSchema = new Schema(
     nextReviewAt: { type: Date, default: null },
     reviewStep: { type: Number, default: 0 },
     lastReviewedAt: { type: Date, default: null },
+    // The LeetCode submission the saved code came from (browser extension), so a resend is ignored.
+    lastSubmissionId: { type: String, default: null },
     // The latest AI analysis of the solution; see lib/ai/postMortem.ts.
     postMortem: {
       type: new Schema(

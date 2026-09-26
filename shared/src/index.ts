@@ -3,6 +3,7 @@
 export * from './ai';
 export * from './auth';
 export * from './constants';
+export * from './extension';
 export * from './leetcode';
 export * from './problems';
 export * from './reviews';

@@ -2,12 +2,9 @@ import { mongo, type Types } from 'mongoose';
 import { SYNC_WINDOW_DAYS, type SyncResult } from '@lct/shared';
 import { Problem } from '../models/Problem.js';
 import { getLeetCodeProblems, getRecentAcceptedSolves } from './leetcode.js';
-import { isScheduled, recordReview, scheduleFromSolve } from './reviews.js';
 import { logActivity } from './activity.js';
+import { applyLeetCodeSolve, newSolvedProblem, saveSolve } from './solves.js';
 import { DAY_MS } from './time.js';
-
-/** A LeetCode re-solve this close before the review is due still counts as the review ("due today"). */
-const EARLY_REVIEW_MS = 12 * 60 * 60 * 1000;
 
 /**
  * Imports the user's recent LeetCode solves from the last SYNC_WINDOW_DAYS.
@@ -40,22 +37,9 @@ export async function syncLeetCodeSolves(userId: Types.ObjectId, username: strin
   for (const [slug, solvedAt] of recent) {
     const problem = tracked.get(slug);
     if (problem) {
-      let changed = true;
-      let countsAsReview = false;
-      if (problem.status === 'Todo' || problem.status === 'Attempted') {
-        problem.status = 'Solved';
-        scheduleFromSolve(problem, solvedAt);
-      } else if (isScheduled(problem) && solvedAt.getTime() >= problem.nextReviewAt!.getTime() - EARLY_REVIEW_MS) {
-        recordReview(problem, 'remembered', solvedAt);
-        countsAsReview = true;
-      } else if (!problem.lastSolvedAt || problem.lastSolvedAt < solvedAt) {
-        problem.lastSolvedAt = solvedAt;
-      } else {
-        changed = false;
-      }
-      if (changed) {
-        await problem.save();
-        await logActivity(problem, solvedAt, countsAsReview ? 'remembered' : undefined);
+      const effect = applyLeetCodeSolve(problem, solvedAt);
+      if (effect) {
+        await saveSolve(problem, effect, solvedAt);
         result.updated++;
       } else {
         result.unchanged++;
@@ -69,18 +53,7 @@ export async function syncLeetCodeSolves(userId: Types.ObjectId, username: strin
       continue;
     }
     try {
-      const created = new Problem({
-        user: userId,
-        title: info.title,
-        slug,
-        leetcodeNumber: info.leetcodeNumber,
-        difficulty: info.difficulty,
-        tags: info.tags,
-        link: info.link,
-        status: 'Solved',
-        source: 'sync',
-      });
-      scheduleFromSolve(created, solvedAt);
+      const created = newSolvedProblem(userId, info, solvedAt, 'sync');
       await created.save();
       await logActivity(created, solvedAt);
       result.added++;

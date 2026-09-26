@@ -417,6 +417,20 @@ a.btn { display: inline-block; text-decoration: none; }
 .agent-tutor { color: var(--easy); background: var(--easy-bg); }
 .agent-planner { color: var(--medium); background: var(--medium-bg); }
 
+/* Browser extension */
+.token-reveal { padding: 14px; border-radius: 8px; background: var(--chip-bg); }
+.token-reveal p { margin: 0 0 12px; }
+.mono { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 0.85rem; }
+.token-list { list-style: none; margin: 16px 0 0; padding: 0; }
+.token-list li { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--border); }
+.token-main { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.token-meta { grid-column: 1; font-size: 0.8rem; color: var(--muted); }
+.token-list li > button, .token-list li > .confirm { grid-column: 2; grid-row: 1 / span 2; }
+.install-steps { margin-top: 16px; }
+.install-steps summary { cursor: pointer; color: var(--accent); font-weight: 600; }
+.install-steps ol { margin: 8px 0 0; padding-left: 20px; }
+.install-steps li + li { margin-top: 4px; }
+
 /* LeetCode sync */
 .sync-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 0 0 12px; padding: 8px 8px 8px 14px; font-size: 0.875rem; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
 .settings-intro { margin-bottom: 16px; }

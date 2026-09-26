@@ -7,6 +7,7 @@ import statsRoutes from './routes/stats.js';
 import { authRouter } from './routes/auth.js';
 import { leetCodeRouter } from './routes/leetcode.js';
 import { aiRouter } from './routes/ai.js';
+import { extensionRoutes, tokenRoutes } from './routes/extension.js';
 import { errorHandler, notFound } from './middleware/errors.js';
 import { timeZone } from './middleware/timezone.js';
 
@@ -17,10 +18,17 @@ export interface AppOptions {
   leetCodeLookupLimit?: number;
   /** Max AI requests per user per minute (on top of the daily limits). */
   aiBurstLimit?: number;
+  /** Max extension submissions per user per minute. */
+  extensionSubmissionLimit?: number;
 }
 
 // Builds the Express app without starting it, so tests can use it directly.
-export function createApp({ authRateLimit = 20, leetCodeLookupLimit = 30, aiBurstLimit = 10 }: AppOptions = {}) {
+export function createApp({
+  authRateLimit = 20,
+  leetCodeLookupLimit = 30,
+  aiBurstLimit = 10,
+  extensionSubmissionLimit = 30,
+}: AppOptions = {}) {
   const app = express();
 
   app.use(cors({ origin: env.CLIENT_URL, credentials: true }));
@@ -33,6 +41,8 @@ export function createApp({ authRateLimit = 20, leetCodeLookupLimit = 30, aiBurs
   app.use('/api/stats', statsRoutes);
   app.use('/api/leetcode', leetCodeRouter({ lookupLimit: leetCodeLookupLimit }));
   app.use('/api/ai', aiRouter({ burstLimit: aiBurstLimit }));
+  app.use('/api/tokens', tokenRoutes);
+  app.use('/api/extension', extensionRoutes({ submissionLimit: extensionSubmissionLimit }));
 
   app.use('/api', notFound);
   app.use(errorHandler);

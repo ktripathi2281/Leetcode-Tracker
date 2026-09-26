@@ -64,7 +64,7 @@ export const problemListQuerySchema = z.object({
 });
 export type ProblemListQuery = z.output<typeof problemListQuerySchema>;
 
-export const PROBLEM_SOURCES = ['manual', 'sync'] as const;
+export const PROBLEM_SOURCES = ['manual', 'sync', 'extension'] as const;
 export type ProblemSource = (typeof PROBLEM_SOURCES)[number];
 
 export interface Problem {

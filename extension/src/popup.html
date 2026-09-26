@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>LeetCode Tracker</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main>
+      <h1><span class="mark" aria-hidden="true">LC</span> LeetCode Tracker</h1>
+      <p class="muted">Saves your accepted LeetCode solutions to your tracker.</p>
+
+      <form id="settings" novalidate>
+        <label for="apiUrl">API address</label>
+        <input id="apiUrl" type="url" placeholder="http://localhost:5173/api" required />
+
+        <label for="token">Access token</label>
+        <input id="token" type="password" placeholder="lct_…" autocomplete="off" spellcheck="false" required />
+        <p class="hint">Create one in the tracker: Settings → Browser extension.</p>
+
+        <button type="submit">Save and test</button>
+        <p id="status" role="status"></p>
+      </form>
+
+      <section aria-labelledby="recent-heading">
+        <div class="row">
+          <h2 id="recent-heading">Recent</h2>
+          <button id="retry" type="button" class="link" hidden>Retry waiting</button>
+        </div>
+        <ul id="history"></ul>
+      </section>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

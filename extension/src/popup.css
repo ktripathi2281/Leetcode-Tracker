@@ -1,0 +1,46 @@
+:root {
+  --bg: #ffffff;
+  --text: #0f172a;
+  --muted: #5b6477;
+  --border: #e2e5ee;
+  --accent: #4f46e5;
+  --good: #15803d;
+  --bad: #b91c1c;
+  color-scheme: light dark;
+  font: 14px/1.45 system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #131a2e;
+    --text: #e6e9f2;
+    --muted: #97a0b5;
+    --border: #252e47;
+    --accent: #6366f1;
+    --good: #4ade80;
+    --bad: #f87171;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; width: 340px; background: var(--bg); color: var(--text); }
+main { padding: 16px; }
+h1 { display: flex; align-items: center; gap: 8px; font-size: 1rem; margin: 0 0 4px; }
+.mark { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 6px; background: var(--accent); color: #fff; font-size: 0.65rem; font-weight: 800; }
+h2 { font-size: 0.85rem; margin: 0; }
+.muted, .hint { color: var(--muted); margin: 0 0 12px; }
+.hint { font-size: 0.8rem; margin: 4px 0 12px; }
+label { display: block; font-weight: 600; font-size: 0.8rem; margin: 10px 0 4px; }
+input { width: 100%; font: inherit; padding: 7px 9px; border-radius: 7px; border: 1px solid var(--border); background: transparent; color: var(--text); }
+button { font: inherit; font-weight: 600; padding: 8px 12px; border-radius: 7px; border: 0; background: var(--accent); color: #fff; cursor: pointer; }
+button:disabled { opacity: 0.6; }
+button.link { padding: 0; background: none; color: var(--accent); font-size: 0.8rem; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#status { min-height: 1.4em; margin: 8px 0 0; font-size: 0.85rem; }
+#status.good { color: var(--good); }
+#status.bad { color: var(--bad); }
+section { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+.row { display: flex; justify-content: space-between; align-items: center; }
+ul { list-style: none; margin: 8px 0 0; padding: 0; }
+li { padding: 6px 0; font-size: 0.85rem; border-top: 1px solid var(--border); }
+li:first-child { border-top: 0; }
+li .when { color: var(--muted); font-size: 0.75rem; }
+li.failed .what, li.queued .what { color: var(--bad); }

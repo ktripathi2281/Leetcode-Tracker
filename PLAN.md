@@ -53,10 +53,14 @@ public, multi-user app.
    - "AI activity" page (linked from Settings): 30-day totals per agent, filters, and each run's
      request, tool calls, response or error, model, tokens and time.
    - Runs are deleted automatically after 90 days (MongoDB TTL index).
-9. **Browser extension** — on an "Accepted" LeetCode submission, sends the code, language,
+9. ✅ **Browser extension** — on an "Accepted" LeetCode submission, sends the code, language,
    runtime and problem to the tracker (creates or updates the problem). Uses the user's own
    browser session on LeetCode; the server never sees or stores LeetCode credentials.
    The extension authenticates to the tracker with a per-user, revocable API token.
+   - Tokens are stored hashed, work only on the extension endpoints, and are managed in Settings.
+   - Same solve rules as sync (shared lib/solves.ts); resends are ignored by submission id.
+   - Submissions that can't be sent (tracker or LeetCode down) are queued and retried.
+   - Not yet verified against live LeetCode (needs the user's LeetCode login): manual test pending.
 10. **Go live**
     - Hosting: MongoDB Atlas (DB), Render or Railway (server), Vercel or Netlify (client)
     - Rotate dev credentials before launch: a dedicated MongoDB user for this app (not shared

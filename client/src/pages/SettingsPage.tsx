@@ -10,6 +10,7 @@ import {
 import { getErrorMessage } from '../api/client';
 import { useConnectLeetCode, useDisconnectLeetCode, useLeetCodeAccount, useSyncNow } from '../api/leetcode';
 import { useAiUsage } from '../api/ai';
+import ExtensionSettings from '../components/ExtensionSettings';
 import { ErrorState, Loading } from '../components/PageStates';
 import { describeSyncResult, timeAgo } from '../lib/format';
 
@@ -19,8 +20,9 @@ export default function SettingsPage() {
   return (
     <>
       <h1>Settings</h1>
-      <p className="muted">Your connected accounts and AI usage.</p>
+      <p className="muted">Your connected accounts, browser extension and AI usage.</p>
       <LeetCodeSettings />
+      <ExtensionSettings />
       <AiUsageSettings />
     </>
   );

@@ -84,6 +84,7 @@ export function signedIn(routes: Record<string, Handler | object> = {}) {
       { agent: 'planner', used: 0, limit: 5, resetsAt: '2030-01-01T00:00:00.000Z' },
     ],
     '/ai/weekly-plan/latest': { plan: null },
+    '/tokens': [],
     ...routes,
   });
 }

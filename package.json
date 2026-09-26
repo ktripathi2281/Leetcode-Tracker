@@ -6,14 +6,15 @@
   "workspaces": [
     "shared",
     "server",
-    "client"
+    "client",
+    "extension"
   ],
   "engines": {
     "node": ">=22"
   },
   "scripts": {
     "dev": "concurrently -n server,client -c blue,magenta \"npm run dev -w server\" \"npm run dev -w client\"",
-    "build": "npm run build -w server && npm run build -w client",
+    "build": "npm run build -w server && npm run build -w client && npm run build -w extension",
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "oxlint"
