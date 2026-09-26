@@ -15,6 +15,8 @@ interface AuthContextValue {
   login: (input: LoginInput) => Promise<void>;
   register: (input: RegisterInput) => Promise<void>;
   logout: () => void;
+  /** Keeps this session going with a new token (after a password change). */
+  replaceSession: (data: AuthResponse) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -74,7 +76,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [signIn],
   );
 
-  const value = useMemo(() => ({ state, login, register, logout }), [state, login, register, logout]);
+  const replaceSession = useCallback((data: AuthResponse) => {
+    setToken(data.token);
+    setState({ status: 'authenticated', user: data.user });
+  }, []);
+
+  const value = useMemo(
+    () => ({ state, login, register, logout, replaceSession }),
+    [state, login, register, logout, replaceSession],
+  );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 

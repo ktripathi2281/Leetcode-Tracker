@@ -1,9 +1,12 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
+import { rateLimit } from 'express-rate-limit';
 import { env } from './config/env.js';
 import healthRoutes from './routes/health.js';
 import problemRoutes from './routes/problems.js';
 import statsRoutes from './routes/stats.js';
+import accountRoutes from './routes/account.js';
 import { authRouter } from './routes/auth.js';
 import { leetCodeRouter } from './routes/leetcode.js';
 import { aiRouter } from './routes/ai.js';
@@ -20,6 +23,8 @@ export interface AppOptions {
   aiBurstLimit?: number;
   /** Max extension submissions per user per minute. */
   extensionSubmissionLimit?: number;
+  /** Max API requests per IP per minute, across everything. */
+  generalRateLimit?: number;
 }
 
 // Builds the Express app without starting it, so tests can use it directly.
@@ -28,15 +33,32 @@ export function createApp({
   leetCodeLookupLimit = 30,
   aiBurstLimit = 10,
   extensionSubmissionLimit = 30,
+  generalRateLimit = 600,
 }: AppOptions = {}) {
   const app = express();
 
-  app.use(cors({ origin: env.CLIENT_URL, credentials: true }));
+  // Behind Render's proxy, req.ip must come from X-Forwarded-For, or every visitor
+  // would share one IP (and one rate limit).
+  app.set('trust proxy', env.TRUST_PROXY);
+  app.disable('x-powered-by');
+  app.use(helmet());
+  app.use(cors({ origin: env.CLIENT_URL }));
+  app.use(
+    '/api',
+    rateLimit({
+      windowMs: 60 * 1000,
+      limit: generalRateLimit,
+      standardHeaders: 'draft-8',
+      legacyHeaders: false,
+      message: { message: 'Too many requests. Please slow down.' },
+    }),
+  );
   app.use(express.json({ limit: '1mb' }));
   app.use(timeZone);
 
   app.use('/api/health', healthRoutes);
   app.use('/api/auth', authRouter({ rateLimit: authRateLimit }));
+  app.use('/api/account', accountRoutes);
   app.use('/api/problems', problemRoutes);
   app.use('/api/stats', statsRoutes);
   app.use('/api/leetcode', leetCodeRouter({ lookupLimit: leetCodeLookupLimit }));

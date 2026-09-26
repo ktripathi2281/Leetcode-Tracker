@@ -1,0 +1,29 @@
+# Render Blueprint for the API. In Render: New → Blueprint → pick this repo.
+# Values marked sync: false are asked for when the Blueprint is created (see DEPLOY.md).
+services:
+  - type: web
+    name: leetcode-tracker-api
+    runtime: node
+    plan: free # sleeps when idle; "starter" stays awake
+    region: singapore
+    # --include=dev: the build tools are devDependencies, which NODE_ENV=production would skip.
+    buildCommand: npm ci --include=dev && npm run build -w server
+    startCommand: node server/dist/index.mjs
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: TRUST_PROXY # Render's proxy sits in front of the app
+        value: "1"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: MONGODB_URI
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: CLIENT_URL # the Vercel address, e.g. https://leetcode-tracker.vercel.app
+        sync: false
+      - key: EMAIL_FROM
+        value: LeetCode Tracker <onboarding@resend.dev>

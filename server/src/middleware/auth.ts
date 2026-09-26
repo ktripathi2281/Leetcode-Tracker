@@ -9,16 +9,17 @@ const unauthorized: ApiError = { message: 'Please sign in to continue.' };
 export const requireAuth: RequestHandler = async (req, res, next) => {
   const header = req.headers.authorization;
   const token = header?.startsWith('Bearer ') ? header.slice(7) : null;
-  const userId = token ? verifyToken(token) : null;
+  const claims = token ? verifyToken(token) : null;
 
-  if (!userId || !isValidObjectId(userId)) {
+  if (!claims || !isValidObjectId(claims.userId)) {
     res.status(401).json(unauthorized);
     return;
   }
 
-  // Check the account still exists, so deleted users can't keep using old tokens.
-  const user = await User.findById(userId);
-  if (!user) {
+  // Check the account still exists and the session wasn't ended (password change,
+  // "sign out everywhere"), so old tokens stop working.
+  const user = await User.findById(claims.userId);
+  if (!user || (user.tokenVersion ?? 0) !== claims.version) {
     res.status(401).json(unauthorized);
     return;
   }

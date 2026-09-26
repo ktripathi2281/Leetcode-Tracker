@@ -3,6 +3,7 @@ import { registerSchema } from '@lct/shared';
 import { useAuth } from '../auth/AuthContext';
 import AuthCard from '../components/AuthCard';
 import TextField from '../components/TextField';
+import SlowServerNotice from '../components/SlowServerNotice';
 import { useForm } from '../lib/useForm';
 
 export default function RegisterPage() {
@@ -40,6 +41,11 @@ export default function RegisterPage() {
         <button className="btn btn-primary btn-block" type="submit" disabled={submitting}>
           {submitting ? 'Creating account…' : 'Create account'}
         </button>
+        <p className="field-hint consent">
+          By creating an account you agree to how we handle your data, described in the{' '}
+          <Link to="/privacy">privacy policy</Link>.
+        </p>
+        {submitting && <SlowServerNotice />}
       </form>
       <p className="auth-switch">
         Already have an account?{' '}

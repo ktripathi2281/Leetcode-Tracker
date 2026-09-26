@@ -3,6 +3,7 @@ import { loginSchema } from '@lct/shared';
 import { useAuth } from '../auth/AuthContext';
 import AuthCard from '../components/AuthCard';
 import TextField from '../components/TextField';
+import SlowServerNotice from '../components/SlowServerNotice';
 import { useForm } from '../lib/useForm';
 
 export default function LoginPage() {
@@ -24,9 +25,13 @@ export default function LoginPage() {
         )}
         <TextField label="Email" type="email" autoComplete="email" autoFocus {...field('email')} />
         <TextField label="Password" type="password" autoComplete="current-password" {...field('password')} />
+        <p className="forgot-link">
+          <Link to="/forgot-password">Forgot password?</Link>
+        </p>
         <button className="btn btn-primary btn-block" type="submit" disabled={submitting}>
           {submitting ? 'Signing in…' : 'Sign in'}
         </button>
+        {submitting && <SlowServerNotice />}
       </form>
       <p className="auth-switch">
         New here?{' '}

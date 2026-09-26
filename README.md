@@ -2,7 +2,7 @@
 
 Track LeetCode problems, review them on a spaced-repetition schedule, and get help from
 AI agents (weekly planner, Socratic tutor, solution post-mortem). See [PLAN.md](PLAN.md)
-for the roadmap.
+for the roadmap and [DEPLOY.md](DEPLOY.md) to put it online.
 
 ## Structure
 - `client/` — React + Vite + TypeScript front end (port 5173)

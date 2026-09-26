@@ -13,12 +13,18 @@ import ReviewsPage from './pages/ReviewsPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import PlanPage from './pages/PlanPage';
 import AiActivityPage from './pages/AiActivityPage';
+import PrivacyPage from './pages/PrivacyPage';
+import { ForgotPasswordPage, ResetPasswordPage } from './pages/PasswordResetPages';
 
 // The router and query client are provided by main.tsx, or by tests.
 export default function App() {
   return (
     <AuthProvider>
       <Routes>
+        {/* Open to everyone, signed in or not. */}
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route element={<GuestOnly />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />

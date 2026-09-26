@@ -40,3 +40,28 @@ export interface AuthResponse {
   token: string;
   user: AuthUser;
 }
+
+// ─── Account management ───────────────────────────────────────────────────────
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Enter your current password'),
+  newPassword: passwordSchema,
+});
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+
+export const forgotPasswordSchema = z.object({ email: emailSchema });
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+
+export const resetPasswordSchema = z.object({
+  token: z.string().trim().min(20, 'This reset link is incomplete').max(200),
+  password: passwordSchema,
+});
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+
+export const deleteAccountSchema = z.object({
+  password: z.string().min(1, 'Enter your password to confirm'),
+});
+export type DeleteAccountInput = z.infer<typeof deleteAccountSchema>;
+
+/** How long a password reset link works. */
+export const PASSWORD_RESET_MINUTES = 30;

@@ -1,7 +1,7 @@
 // Builds the extension into dist/, ready for chrome://extensions → "Load unpacked".
 // Usage: node build.mjs [--watch]
 import { build, context } from 'esbuild';
-import { copyFile, mkdir, rm } from 'node:fs/promises';
+import { copyFile, cp, mkdir, rm } from 'node:fs/promises';
 
 const watch = process.argv.includes('--watch');
 const outdir = 'dist';
@@ -25,6 +25,7 @@ const configs = [
 
 async function copyStatic() {
   for (const file of ['manifest.json', 'popup.html', 'popup.css']) await copyFile(`src/${file}`, `${outdir}/${file}`);
+  await cp('src/icons', `${outdir}/icons`, { recursive: true });
 }
 
 await rm(outdir, { recursive: true, force: true });

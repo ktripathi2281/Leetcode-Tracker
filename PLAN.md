@@ -65,16 +65,20 @@ public, multi-user app.
      the tracker). Console diagnostics (`[LeetCode Tracker] …`) and server-side logging of
      rejected requests are in place for when we pick this up. Idea for then: also fill in code
      for synced problems via LeetCode's submission details, from the user's own browser.
-10. **Go live**
+10. **Go live** (code done; deployment steps in DEPLOY.md)
+    - ✅ Hosting config: `render.yaml` (API on Render), `client/vercel.json` (site on Vercel, SPA
+      routing, CSP and security headers); "waking up the server" notice for Render's free plan
     - Hosting: MongoDB Atlas (DB), Render or Railway (server), Vercel or Netlify (client)
     - Rotate dev credentials before launch: a dedicated MongoDB user for this app (not shared
       with other projects) and a new Gemini API key; set a new JWT_SECRET in production
     - `app.set("trust proxy", 1)` behind the host's proxy so rate limiting sees real client IPs
+    - ✅ Password reset by email (Resend; one-time hashed links, 30 min), change password,
+      "sign out everywhere" (session versions), data export
     - Password reset by email; optional email verification
-    - Security headers (helmet), CORS locked to the real domain, general API rate limiting
-    - Privacy policy; "delete my account and data" in settings
+    - ✅ Security headers (helmet), CORS locked to the real domain, general API rate limiting
+    - ✅ Privacy policy; "delete my account and data" in settings
     - Error monitoring and basic usage metrics
-    - Publish the extension to the Chrome Web Store
+    - Publish the extension to the Chrome Web Store (later; ✅ icons done)
 
 ## Decisions
 - **No LeetCode session cookies.** Storing users' LeetCode cookies means holding their

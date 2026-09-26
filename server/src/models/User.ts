@@ -9,6 +9,8 @@ const userSchema = new Schema(
     username: { type: String, required: true, trim: true },
     email: { type: String, required: true, trim: true, lowercase: true },
     passwordHash: { type: String, required: true, select: false },
+    // Session version; see lib/tokens.ts. Bumped to sign out every session at once.
+    tokenVersion: { type: Number, default: 0 },
     leetcode: {
       username: { type: String, default: null },
       lastSyncedAt: { type: Date, default: null },

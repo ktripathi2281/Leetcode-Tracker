@@ -65,6 +65,9 @@ export default function AppLayout() {
       <main className="content">
         <Outlet />
       </main>
+      <footer className="app-footer">
+        <Link to="/privacy">Privacy</Link>
+      </footer>
     </div>
   );
 }

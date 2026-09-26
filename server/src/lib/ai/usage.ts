@@ -29,26 +29,33 @@ export class UsageLimitError extends Error {
 export async function claimUse(user: Types.ObjectId, agent: AgentName, now = new Date()): Promise<AgentUsage> {
   const limit = AGENT_DAILY_LIMITS[agent];
   const day = utcDay(now);
-  try {
-    // Matches only while under the limit; at the limit, the upsert collides with the
-    // existing counter on the unique index instead of creating a second one.
-    const doc = await Usage.findOneAndUpdate(
-      { user, agent, day, count: { $lt: limit } },
-      { $inc: { count: 1 } },
-      { upsert: true, returnDocument: 'after' },
-    );
-    return { agent, used: doc.count, limit, resetsAt: resetsAt(now) };
-  } catch (err) {
-    if (err instanceof mongo.MongoServerError && err.code === 11000) {
-      throw new UsageLimitError({ agent, used: limit, limit, resetsAt: resetsAt(now) });
+  // Matches only while under the limit; at the limit, the upsert collides with the
+  // existing counter on the unique index instead of creating a second one.
+  // A collision can also mean another request created today's counter a moment ago,
+  // so try again once: only a collision on a counter that exists means "limit reached".
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const doc = await Usage.findOneAndUpdate(
+        { user, agent, day, count: { $lt: limit } },
+        { $inc: { count: 1 } },
+        { upsert: true, returnDocument: 'after' },
+      );
+      return { agent, used: doc.count, limit, resetsAt: resetsAt(now) };
+    } catch (err) {
+      if (!(err instanceof mongo.MongoServerError && err.code === 11000)) throw err;
     }
-    throw err;
   }
+  throw new UsageLimitError({ agent, used: limit, limit, resetsAt: resetsAt(now) });
 }
 
 /** Gives a use back when the AI call failed, so outages don't eat the allowance. */
 export async function refundUse(user: Types.ObjectId, agent: AgentName, now = new Date()) {
   await Usage.updateOne({ user, agent, day: utcDay(now), count: { $gt: 0 } }, { $inc: { count: -1 } });
+}
+
+/** For account deletion. */
+export async function deleteUsageFor(user: Types.ObjectId) {
+  await Usage.deleteMany({ user });
 }
 
 export async function getUsage(user: Types.ObjectId, now = new Date()): Promise<AgentUsage[]> {

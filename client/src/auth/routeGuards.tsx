@@ -1,5 +1,6 @@
 import { Navigate, Outlet, useLocation } from 'react-router';
 import { useAuth } from './AuthContext';
+import SlowServerNotice from '../components/SlowServerNotice';
 
 export interface FromState {
   from?: string;
@@ -10,7 +11,7 @@ export function RequireAuth() {
   const { state } = useAuth();
   const location = useLocation();
 
-  if (state.status === 'loading') return <div className="page-spinner" aria-label="Loading" />;
+  if (state.status === 'loading') return <LoadingSession />;
   if (state.status === 'anonymous') {
     const from = location.pathname + location.search;
     return <Navigate to="/login" replace state={{ from } satisfies FromState} />;
@@ -23,10 +24,19 @@ export function GuestOnly() {
   const { state } = useAuth();
   const location = useLocation();
 
-  if (state.status === 'loading') return <div className="page-spinner" aria-label="Loading" />;
+  if (state.status === 'loading') return <LoadingSession />;
   if (state.status === 'authenticated') {
     const from = (location.state as FromState | null)?.from ?? '/';
     return <Navigate to={from} replace />;
   }
   return <Outlet />;
+}
+
+function LoadingSession() {
+  return (
+    <>
+      <div className="page-spinner" aria-label="Loading" />
+      <SlowServerNotice />
+    </>
+  );
 }
