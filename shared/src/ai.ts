@@ -24,6 +24,60 @@ export interface AgentUsage {
   resetsAt: string;
 }
 
+// ─── Logs ─────────────────────────────────────────────────────────────────────
+
+/** Agent runs are deleted automatically after this many days. */
+export const AGENT_LOG_RETENTION_DAYS = 90;
+/** Window for the totals on the AI activity page. */
+export const AGENT_STATS_DAYS = 30;
+
+export const agentLogQuerySchema = z.object({
+  agent: z.enum(AGENTS).optional(),
+  status: z.enum(['ok', 'error']).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});
+export type AgentLogQuery = z.output<typeof agentLogQuerySchema>;
+
+export interface AgentLogSummary {
+  id: string;
+  agent: AgentName;
+  status: 'ok' | 'error';
+  problem: { id: string; title: string } | null;
+  /** One line describing the run, e.g. the tutor's reply or the plan's summary. */
+  preview: string;
+  toolCallCount: number;
+  model: string | null;
+  inputTokens: number;
+  outputTokens: number;
+  durationMs: number;
+  createdAt: string;
+}
+
+export interface AgentLogDetail extends AgentLogSummary {
+  input: unknown;
+  toolCalls: { name: string; args: unknown; result: unknown }[];
+  output: unknown;
+  error: string | null;
+}
+
+export interface AgentLogListResponse {
+  logs: AgentLogSummary[];
+  total: number;
+  page: number;
+  pages: number;
+}
+
+export interface AgentStats {
+  agent: AgentName;
+  runs: number;
+  errors: number;
+  inputTokens: number;
+  outputTokens: number;
+  /** Of successful runs; 0 if none. */
+  avgDurationMs: number;
+}
+
 // ─── Post-mortem ──────────────────────────────────────────────────────────────
 
 export interface PostMortem {

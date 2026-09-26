@@ -49,7 +49,10 @@ public, multi-user app.
      failed calls don't count. Plus a 10-per-minute burst limit.
    - The planner's tools are read-only and scoped to the signed-in user; its plan is checked:
      tracked problems must be the user's, new LeetCode problems must exist (invented ones dropped).
-8. **Agent Logs page** — list + full trace view.
+8. ✅ **Agent Logs page** — list + full trace view.
+   - "AI activity" page (linked from Settings): 30-day totals per agent, filters, and each run's
+     request, tool calls, response or error, model, tokens and time.
+   - Runs are deleted automatically after 90 days (MongoDB TTL index).
 9. **Browser extension** — on an "Accepted" LeetCode submission, sends the code, language,
    runtime and problem to the tracker (creates or updates the problem). Uses the user's own
    browser session on LeetCode; the server never sees or stores LeetCode credentials.

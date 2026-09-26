@@ -12,6 +12,7 @@ import SettingsPage from './pages/SettingsPage';
 import ReviewsPage from './pages/ReviewsPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import PlanPage from './pages/PlanPage';
+import AiActivityPage from './pages/AiActivityPage';
 
 // The router and query client are provided by main.tsx, or by tests.
 export default function App() {
@@ -33,6 +34,7 @@ export default function App() {
             <Route path="plan" element={<PlanPage />} />
             <Route path="analytics" element={<AnalyticsPage />} />
             <Route path="settings" element={<SettingsPage />} />
+            <Route path="ai-activity" element={<AiActivityPage />} />
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

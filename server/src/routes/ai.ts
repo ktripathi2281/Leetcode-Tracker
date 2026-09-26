@@ -3,6 +3,7 @@ import { rateLimit } from 'express-rate-limit';
 import { isValidObjectId } from 'mongoose';
 import {
   AGENT_LABELS,
+  agentLogQuerySchema,
   tutorRequestSchema,
   weeklyPlanRequestSchema,
   type AgentUsage,
@@ -19,8 +20,9 @@ import { UsageLimitError, getUsage } from '../lib/ai/usage.js';
 import { analyzeSolution } from '../lib/ai/postMortem.js';
 import { tutorReply } from '../lib/ai/tutor.js';
 import { planWeek } from '../lib/ai/planner.js';
-import { validateBody } from '../middleware/validate.js';
+import { sendValidationError, validateBody } from '../middleware/validate.js';
 import { AgentLog } from '../models/AgentLog.js';
+import { getAgentLog, getAgentStats, listAgentLogs } from '../lib/ai/logs.js';
 
 function hoursUntil(iso: string) {
   return Math.max(1, Math.ceil((Date.parse(iso) - Date.now()) / 3_600_000));
@@ -139,6 +141,29 @@ export function aiRouter({ burstLimit }: { burstLimit: number }) {
   router.get('/weekly-plan/latest', async (req, res) => {
     const log = await AgentLog.findOne({ user: req.userId, agent: 'planner', status: 'ok' }).sort({ createdAt: -1 }).lean();
     res.json({ plan: (log?.output as WeeklyPlan | undefined) ?? null });
+  });
+
+  // GET /api/ai/logs — the user's agent runs, newest first
+  router.get('/logs', async (req, res) => {
+    const parsed = agentLogQuerySchema.safeParse(req.query);
+    if (!parsed.success) return sendValidationError(res, parsed.error);
+    res.json(await listAgentLogs(req.userId!, parsed.data));
+  });
+
+  // GET /api/ai/logs/stats — totals per agent for the last 30 days
+  router.get('/logs/stats', async (req, res) => {
+    res.json(await getAgentStats(req.userId!));
+  });
+
+  // GET /api/ai/logs/:id — one run in full: input, tool calls, output
+  router.get('/logs/:id', async (req, res) => {
+    const id = req.params.id;
+    const log = isValidObjectId(id) ? await getAgentLog(req.userId!, id) : null;
+    if (!log) {
+      res.status(404).json({ message: 'Run not found' } satisfies ApiError);
+      return;
+    }
+    res.json(log);
   });
 
   return router;

@@ -53,3 +53,15 @@ export function describeSyncResult(r: SyncResult): string {
   if (r.failed) notes.push(`${r.failed} couldn't be loaded`);
   return notes.length ? `${summary} (${notes.join('; ')})` : summary;
 }
+
+const compact = new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 });
+
+/** 950, 1.2K, 3.4M */
+export const formatCount = (n: number) => compact.format(n);
+
+/** "850 ms", "12.3 s", "1 min 5 s" */
+export function formatDuration(ms: number): string {
+  if (ms < 1_000) return `${ms} ms`;
+  if (ms < 60_000) return `${(ms / 1_000).toFixed(1)} s`;
+  return `${Math.floor(ms / 60_000)} min ${Math.round((ms % 60_000) / 1_000)} s`;
+}

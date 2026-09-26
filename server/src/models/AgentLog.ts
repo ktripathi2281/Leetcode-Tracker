@@ -1,5 +1,5 @@
 import { Schema, model } from 'mongoose';
-import { AGENTS } from '@lct/shared';
+import { AGENTS, AGENT_LOG_RETENTION_DAYS } from '@lct/shared';
 
 // Every agent run: what went in, the tools it called, what came out, and what it cost.
 // Powers the Agent Logs page, and the weekly planner's "latest plan".
@@ -30,6 +30,8 @@ const agentLogSchema = new Schema(
 );
 
 agentLogSchema.index({ user: 1, createdAt: -1 });
+// Runs hold the user's code and messages, so MongoDB deletes them after the retention period.
+agentLogSchema.index({ createdAt: 1 }, { expireAfterSeconds: AGENT_LOG_RETENTION_DAYS * 24 * 60 * 60 });
 agentLogSchema.index({ user: 1, agent: 1, status: 1, createdAt: -1 });
 
 export const AgentLog = model('AgentLog', agentLogSchema);

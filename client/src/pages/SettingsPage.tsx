@@ -1,5 +1,7 @@
 import { useId, useState, type FormEvent } from 'react';
+import { Link } from 'react-router';
 import {
+  AGENT_LABELS,
   AUTO_SYNC_AFTER_HOURS,
   LEETCODE_RECENT_LIMIT,
   SYNC_WINDOW_DAYS,
@@ -7,6 +9,7 @@ import {
 } from '@lct/shared';
 import { getErrorMessage } from '../api/client';
 import { useConnectLeetCode, useDisconnectLeetCode, useLeetCodeAccount, useSyncNow } from '../api/leetcode';
+import { useAiUsage } from '../api/ai';
 import { ErrorState, Loading } from '../components/PageStates';
 import { describeSyncResult, timeAgo } from '../lib/format';
 
@@ -16,8 +19,9 @@ export default function SettingsPage() {
   return (
     <>
       <h1>Settings</h1>
-      <p className="muted">Manage your connected accounts.</p>
+      <p className="muted">Your connected accounts and AI usage.</p>
       <LeetCodeSettings />
+      <AiUsageSettings />
     </>
   );
 }
@@ -130,6 +134,62 @@ function LeetCodeSettings() {
             )}
           </div>
         </form>
+      )}
+    </section>
+  );
+}
+
+/** Today's use of each AI agent against its daily limit. */
+function AiUsageSettings() {
+  const usage = useAiUsage();
+
+  return (
+    <section className="card" aria-labelledby="ai-usage-heading">
+      <div className="card-head">
+        <h2 id="ai-usage-heading">AI usage today</h2>
+        <Link to="/ai-activity" className="btn btn-secondary">
+          See all AI runs
+        </Link>
+      </div>
+      {usage.data ? (
+        <>
+          <table className="meters">
+            <thead className="visually-hidden">
+              <tr>
+                <th scope="col">Agent</th>
+                <th scope="col">Used today</th>
+              </tr>
+            </thead>
+            <tbody>
+              {usage.data.map((u) => (
+                <tr key={u.agent}>
+                  <th scope="row">{AGENT_LABELS[u.agent]}</th>
+                  <td>
+                    <span className="meter-label">
+                      {u.used} of {u.limit} used
+                    </span>
+                    <span
+                      className="meter-track"
+                      role="meter"
+                      aria-label={`${AGENT_LABELS[u.agent]} used today`}
+                      aria-valuemin={0}
+                      aria-valuemax={u.limit}
+                      aria-valuenow={u.used}
+                    >
+                      {u.used > 0 && <span className="meter-fill" style={{ width: `${(u.used / u.limit) * 100}%` }} />}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="field-hint note">
+            Limits reset at midnight UTC ({new Date(usage.data[0]!.resetsAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}{' '}
+            your time). Failed runs don't count.
+          </p>
+        </>
+      ) : (
+        <p className="muted">Loading…</p>
       )}
     </section>
   );
